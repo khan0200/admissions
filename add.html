@@ -732,27 +732,63 @@
 
         function renderAdmissions(list) {
             document.getElementById('loadingState')?.remove();
-            cardsContainer.innerHTML = list.length ? list.map(a => `
-                <div class="col-12 col-md-6 col-xl-4 bounce-in">
-                    <div class="admission-card">
-                        <div class="card-header-row mb-2">
-                            <div class="university-icon" style="width:36px; height:36px;"><i class="bi bi-building"></i></div>
-                            <div class="flex-grow-1 ms-2">
-                                <h3 class="university-name" style="font-size:14px;">${a.data.universityName}</h3>
+            cardsContainer.innerHTML = list.length ? list.map(a => {
+                const numRounds = a.data.roundsCount || a.data.numberOfRounds || (a.data.rounds ? a.data.rounds.length : 0);
+                const roundBadgeClass = numRounds === 1 ? 'round-single' : 'round-multiple';
+                const roundText = numRounds === 1 ? '1 ROUND' : `${numRounds} ROUNDS`;
+                
+                // Generate rounds HTML
+                let roundsHTML = '';
+                if (a.data.rounds && a.data.rounds.length > 0) {
+                    a.data.rounds.forEach((round, index) => {
+                        const fromDate = formatDate(round.onlineApplicationFrom || round.applicationPeriod?.from);
+                        const toDate = formatDate(round.onlineApplicationTo || round.applicationPeriod?.to);
+                        
+                        if (fromDate && toDate) {
+                            roundsHTML += `
+                                <div class="round-item">
+                                    <span class="round-label">R${index + 1}</span>
+                                    <span class="round-date">${fromDate}</span>
+                                    <span class="round-arrow">→</span>
+                                    <span class="round-date">${toDate}</span>
+                                </div>
+                            `;
+                        }
+                    });
+                }
+                
+                if (!roundsHTML) {
+                    roundsHTML = '<p class="no-periods">No application periods set</p>';
+                }
+
+                return `
+                    <div class="col-12 col-md-6 col-xl-4 admission-card-wrapper" data-id="${a.id}">
+                        <div class="admission-card">
+                            <div class="card-header-row">
+                                <div class="university-icon">
+                                    <i class="bi bi-building"></i>
+                                </div>
+                                <div class="university-info">
+                                    <h3 class="university-name">${a.data.universityName || 'Unknown University'}</h3>
+                                </div>
+                                <span class="round-badge ${roundBadgeClass}">${roundText}</span>
                             </div>
-                            <span class="ios-badge" style="font-size:10px;">${a.data.roundsCount || a.data.rounds?.length || 0} ROUNDS</span>
-                        </div>
-                        <div class="education-level mb-3" style="font-size:11px;">
-                            <i class="bi bi-award"></i> <span>${a.data.educationLevel}</span>
-                        </div>
-                        <div class="card-actions">
-                            <button class="action-btn btn-view" onclick="viewAdmission('${a.id}')"><i class="bi bi-eye"></i></button>
-                            <button class="action-btn btn-edit" onclick="editAdmission('${a.id}')"><i class="bi bi-pencil"></i></button>
-                            <button class="action-btn btn-delete" onclick="deleteAdmission('${a.id}')"><i class="bi bi-trash"></i></button>
+                            <div class="education-level">
+                                <i class="bi bi-award"></i>
+                                <span>${a.data.educationLevel || 'N/A'}</span>
+                            </div>
+                            <div class="rounds-container ${!roundsHTML.includes('round-item') ? 'empty-rounds' : ''}">
+                                ${roundsHTML}
+                            </div>
+                            <div class="card-actions">
+                                <button class="action-btn btn-view" onclick="viewAdmission('${a.id}')"><i class="bi bi-eye"></i></button>
+                                <button class="action-btn btn-edit" onclick="editAdmission('${a.id}')"><i class="bi bi-pencil"></i></button>
+                                <button class="action-btn btn-delete" onclick="deleteAdmission('${a.id}')"><i class="bi bi-trash"></i></button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            `).join('') : '<div class="col-12 empty-state"><h3>No records found</h3></div>';
+                `;
+            }).join('') : '<div class="col-12 empty-state"><h3>No records found</h3></div>';
             admissionCount.textContent = `${list.length} records`;
         }
 
