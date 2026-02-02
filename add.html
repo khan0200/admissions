@@ -59,17 +59,20 @@
         }
         
         .ios-modal {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border-radius: 20px;
-            width: 95%;
-            max-width: 920px;
-            max-height: 90vh;
+            width: 100%;
+            max-width: 756px;
+            max-height: 85vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
             transform: scale(0.9) translateY(20px);
             transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25),
+                        0 0 0 1px rgba(255, 255, 255, 0.1);
         }
         
         .ios-modal-overlay.active .ios-modal {
@@ -281,13 +284,132 @@
 
         .action-btn:hover { transform: scale(1.1); filter: brightness(0.95); }
 
-        /* Accordion in Detail View */
-        .ios-info-section { border-bottom: 1px solid rgba(0,0,0,0.06); }
-        .ios-section-header { display: flex; align-items: center; gap: 12px; padding: 18px 24px; cursor: pointer; }
-        .ios-section-header .chevron { margin-left: auto; transition: transform 0.3s ease; color: #c7c7cc; }
-        .ios-info-section.active .chevron { transform: rotate(180deg); color: #007aff; }
-        .ios-section-content { max-height: 0; overflow: hidden; padding: 0 24px; transition: all 0.3s ease; opacity: 0; white-space: pre-line; font-size: 14px; }
-        .ios-info-section.active .ios-section-content { max-height: 1000px; padding-bottom: 24px; opacity: 1; }
+        /* Rounds Table */
+        .ios-rounds-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .ios-rounds-table thead {
+            background: #f8f9fa;
+            position: sticky;
+            top: 0;
+        }
+        
+        .ios-rounds-table th {
+            padding: 14px 16px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #8e8e93;
+            text-align: left;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        }
+        
+        .ios-rounds-table td {
+            padding: 16px;
+            font-size: 14px;
+            color: #1c1c1e;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            vertical-align: middle;
+        }
+        
+        .ios-rounds-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .ios-rounds-table tbody tr:hover {
+            background: rgba(0, 122, 255, 0.03);
+        }
+        
+        .round-badge-cell {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #007aff 0%, #5856d6 100%);
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            border-radius: 10px;
+        }
+        
+        .date-primary {
+            font-weight: 600;
+            color: #1c1c1e;
+        }
+        
+        .date-secondary {
+            font-size: 12px;
+            color: #8e8e93;
+            margin-top: 2px;
+        }
+        
+        .ios-section-content.empty {
+            color: #c7c7cc;
+            font-style: italic;
+        }
+
+        /* iOS Accordion Styles */
+        .ios-info-section {
+            padding: 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            transition: background-color 0.2s ease;
+        }
+
+        .ios-info-section:hover {
+            background-color: rgba(0, 0, 0, 0.01);
+        }
+
+        .ios-section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 18px 24px;
+            cursor: pointer;
+            margin-bottom: 0;
+            user-select: none;
+        }
+
+        .ios-section-header .chevron {
+            margin-left: auto;
+            font-size: 14px;
+            color: #c7c7cc;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .ios-info-section.active .chevron {
+            transform: rotate(180deg);
+            color: #007aff;
+        }
+
+        .ios-section-content {
+            max-height: 0;
+            overflow: hidden;
+            padding: 0 24px;
+            font-size: 14px;
+            color: #3c3c43;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+        }
+
+        .ios-info-section.active .ios-section-content {
+            max-height: 1000px;
+            padding-bottom: 24px;
+            opacity: 1;
+        }
+
+        .ios-section-header span {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1c1c1e;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
 
         /* University Header in Detail View */
         .ios-university-header {
@@ -302,15 +424,58 @@
         .ios-university-icon {
             width: 50px;
             height: 50px;
-            background: #007aff;
+            background: linear-gradient(135deg, #007aff 0%, #5856d6 100%);
             border-radius: 12px;
-            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-            color: white;
-            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
         
-        .ios-university-info h3 { font-size: 16px; font-weight: 600; margin: 0; }
-        .edu-level-badge { background: #e5e5ea; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+        .ios-university-icon i {
+            font-size: 24px;
+            color: white;
+        }
+        
+        .ios-university-info h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1c1c1e;
+            margin: 0 0 4px 0;
+            line-height: 1.3;
+        }
+        
+        .ios-university-info .edu-level-badge {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 600;
+            color: #1c1c1e;
+            background: #e5e5ea;
+            padding: 4px 10px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+        
+        /* Mobile responsive table */
+        @media (max-width: 600px) {
+            .ios-modal {
+                max-width: 100%;
+                margin: 10px;
+                max-height: 90vh;
+            }
+            
+            .ios-rounds-table {
+                display: block;
+                overflow-x: auto;
+            }
+            
+            .ios-rounds-table th,
+            .ios-rounds-table td {
+                padding: 12px 10px;
+                font-size: 12px;
+            }
+        }
 
         /* iOS Badge Style */
         .ios-badge {
@@ -618,13 +783,15 @@
                     </div>
                 </div>
                 <table class="ios-rounds-table w-100">
-                    <thead><tr><th>Round</th><th>Application</th><th>Result</th></tr></thead>
+                    <thead><tr><th>Round</th><th>Application</th><th>Docs</th><th>Interview</th><th>Result</th></tr></thead>
                     <tbody>${d.rounds?.map((r, i) => `
                         <tr>
                             <td><span class="round-badge-cell">R${i+1}</span></td>
-                            <td><div class="date-primary">${formatDate(r.onlineApplicationFrom)}</div><div class="date-secondary">${formatDate(r.onlineApplicationTo)}</div></td>
-                            <td>${formatDate(r.announcement)}</td>
-                        </tr>`).join('') || '<tr><td colspan="3" class="text-center p-4 text-muted">No rounds configured</td></tr>'}
+                            <td><div class="date-primary">${formatDate(r.onlineApplicationFrom) || '-'}</div>${formatDate(r.onlineApplicationTo) ? `<div class="date-secondary">to ${formatDate(r.onlineApplicationTo)}</div>` : ''}</td>
+                            <td>${formatDate(r.documentSubmission) || '-'}</td>
+                            <td>${formatDate(r.interview) || '-'}</td>
+                            <td>${formatDate(r.announcement) || '-'}</td>
+                        </tr>`).join('') || '<tr><td colspan="5" class="text-center p-4 text-muted">No rounds configured</td></tr>'}
                     </tbody>
                 </table>
                 <div class="ios-info-section" id="v-info">
