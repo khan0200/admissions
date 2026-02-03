@@ -1,0 +1,17 @@
+# Google Apps Script (contains sensitive configuration)
+google-apps-script.js
+
+# Node modules
+node_modules/
+
+# Environment variables
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db

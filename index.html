@@ -145,8 +145,8 @@
         }
         
         .card-actions {
-            display: flex;
-            justify-content: center;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 8px;
             margin-top: 12px;
             padding-top: 12px;
@@ -162,6 +162,7 @@
             background: white;
             color: #1c1c1e;
             transition: all 0.2s ease;
+            cursor: pointer;
         }
         
         .action-btn.view-btn {
@@ -175,10 +176,124 @@
             color: white;
         }
         
+        .action-btn.apply-btn {
+            background: linear-gradient(135deg, #34c759 0%, #30d158 100%);
+            color: white;
+            border-color: transparent;
+        }
+        
+        .action-btn.apply-btn:hover {
+            transform: scale(0.98);
+            box-shadow: 0 4px 15px rgba(52, 199, 89, 0.4);
+        }
+        
         .action-btn.delete:hover {
             border-color: #ef4444;
             color: #ef4444;
             background: #fef2f2;
+        }
+        
+        /* Registration Modal Styles */
+        .ios-form-group {
+            margin-bottom: 20px;
+        }
+        
+        .ios-form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1c1c1e;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+        
+        .ios-form-input {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 15px;
+            color: #1c1c1e;
+            background: rgba(120, 120, 128, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .ios-form-input:focus {
+            outline: none;
+            border-color: #007aff;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+        }
+        
+        .ios-form-input.uppercase {
+            text-transform: uppercase;
+        }
+        
+        .ios-form-textarea {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 15px;
+            color: #1c1c1e;
+            background: rgba(120, 120, 128, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        .ios-form-textarea:focus {
+            outline: none;
+            border-color: #007aff;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+        }
+        
+        .ios-modal-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .ios-cancel-btn {
+            padding: 14px;
+            background: rgba(120, 120, 128, 0.12);
+            color: #1c1c1e;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .ios-cancel-btn:hover {
+            background: rgba(120, 120, 128, 0.2);
+        }
+        
+        .ios-submit-btn {
+            padding: 14px;
+            background: linear-gradient(135deg, #007aff 0%, #5856d6 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .ios-submit-btn:hover {
+            transform: scale(0.98);
+            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.4);
+        }
+        
+        .ios-submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
         
         /* iOS Style Modal */
@@ -590,6 +705,49 @@
                 font-size: 12px;
             }
         }
+        
+        /* Success Toast Notification */
+        .success-toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: linear-gradient(135deg, #34c759 0%, #30d158 100%);
+            color: white;
+            padding: 16px 28px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(52, 199, 89, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            font-size: 15px;
+            z-index: 10000;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        .success-toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+        
+        .success-toast i {
+            font-size: 24px;
+            animation: checkmark 0.6s ease;
+        }
+        
+        @keyframes checkmark {
+            0% {
+                transform: scale(0) rotate(-45deg);
+            }
+            50% {
+                transform: scale(1.2) rotate(5deg);
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+            }
+        }
     </style>
 </head>
 <body>
@@ -605,7 +763,6 @@
                         <p>Manage university admission announcements</p>
                     </div>
                 </div>
-
             </div>
         </header>
 
@@ -666,6 +823,63 @@
                 <button class="ios-done-btn" onclick="closeModal()">Done</button>
             </div>
         </div>
+    </div>
+
+    <!-- Registration Modal -->
+    <div class="ios-modal-overlay" id="registrationModal">
+        <div class="ios-modal" style="max-width: 500px;">
+            <div class="ios-modal-header">
+                <h2>Registration</h2>
+                <button class="ios-close-btn" onclick="closeRegistrationModal()">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+            <div class="ios-modal-body" style="padding: 24px;">
+                <form id="registrationForm">
+                    <div class="ios-form-group">
+                        <label class="ios-form-label" for="studentName">Name</label>
+                        <input 
+                            type="text" 
+                            id="studentName" 
+                            class="ios-form-input uppercase" 
+                            placeholder="Enter your name"
+                            required
+                        >
+                    </div>
+                    <div class="ios-form-group">
+                        <label class="ios-form-label" for="studentNumber">Phone Number</label>
+                        <input 
+                            type="tel" 
+                            id="studentNumber" 
+                            class="ios-form-input" 
+                            placeholder="+998-XX-XXX-XXXX"
+                            maxlength="17"
+                            required
+                        >
+                    </div>
+                    <div class="ios-form-group">
+                        <label class="ios-form-label" for="studentMessage">Message</label>
+                        <textarea 
+                            id="studentMessage" 
+                            class="ios-form-textarea" 
+                            rows="3"
+                        ></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="ios-modal-footer">
+                <div class="ios-modal-actions">
+                    <button class="ios-cancel-btn" onclick="closeRegistrationModal()">Cancel</button>
+                    <button class="ios-submit-btn" id="submitRegistration">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Toast Notification -->
+    <div class="success-toast" id="successToast">
+        <i class="bi bi-check-circle-fill"></i>
+        <span>Registration Successful!</span>
     </div>
 
     <!-- Bootstrap 5 JS -->
@@ -764,6 +978,9 @@
                         <div class="card-actions">
                             <button class="action-btn view-btn" onclick="viewAdmission('${docId}')">
                                 <i class="bi bi-eye"></i> View
+                            </button>
+                            <button class="action-btn apply-btn" onclick="openRegistrationModal('${docId}')">
+                                <i class="bi bi-telephone-fill"></i> Apply
                             </button>
                         </div>
                     </div>
@@ -990,6 +1207,159 @@
 
         // Initialize
         loadAdmissions();
+        
+        // Registration Modal Functions
+        let currentAdmissionId = null;
+        
+        window.openRegistrationModal = function(admissionId) {
+            currentAdmissionId = admissionId;
+            const modal = document.getElementById('registrationModal');
+            const form = document.getElementById('registrationForm');
+            form.reset();
+            
+            // Get university name and set message
+            const admission = allAdmissions.find(a => a.id === admissionId);
+            if (admission) {
+                const universityName = admission.data.universityName || 'this University';
+                const messageTextarea = document.getElementById('studentMessage');
+                messageTextarea.value = `I'm interested in ${universityName}, Please contact me!`;
+            }
+            
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        };
+        
+        window.closeRegistrationModal = function() {
+            const modal = document.getElementById('registrationModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+            currentAdmissionId = null;
+        };
+        
+        // Format phone number input
+        const phoneInput = document.getElementById('studentNumber');
+        phoneInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            
+            // Ensure it starts with 998
+            if (!value.startsWith('998') && value.length > 0) {
+                value = '998' + value;
+            }
+            
+            // Format: +998-XX-XXX-XXXX
+            let formatted = '';
+            if (value.length > 0) {
+                formatted = '+998';
+                if (value.length > 3) {
+                    formatted += '-' + value.substring(3, 5);
+                }
+                if (value.length > 5) {
+                    formatted += '-' + value.substring(5, 8);
+                }
+                if (value.length > 8) {
+                    formatted += '-' + value.substring(8, 12);
+                }
+            }
+            
+            e.target.value = formatted;
+        });
+        
+        // Handle registration form submission
+        document.getElementById('submitRegistration').addEventListener('click', async function() {
+            const nameInput = document.getElementById('studentName');
+            const phoneInput = document.getElementById('studentNumber');
+            const submitBtn = this;
+            
+            // Validate inputs
+            if (!nameInput.value.trim() || !phoneInput.value.trim()) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            // Validate phone number format
+            const phoneRegex = /^\+998-\d{2}-\d{3}-\d{4}$/;
+            if (!phoneRegex.test(phoneInput.value)) {
+                alert('Please enter a valid phone number in format: +998-XX-XXX-XXXX');
+                return;
+            }
+            
+            try {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
+                
+                const messageTextarea = document.getElementById('studentMessage');
+                
+                // Get university name for notification
+                const admission = allAdmissions.find(a => a.id === currentAdmissionId);
+                const universityName = admission ? admission.data.universityName : 'Unknown University';
+                
+                // Strip +998 prefix from phone number before saving
+                const phoneNumber = phoneInput.value.replace('+998-', '').replace(/-/g, '');
+                
+                const studentData = {
+                    name: nameInput.value.trim().toUpperCase(),
+                    phoneNumber: phoneNumber, // Save without +998 prefix
+                    message: messageTextarea.value,
+                    universityName: universityName,
+                    admissionId: currentAdmissionId,
+                    registeredAt: new Date().toISOString(),
+                    timestamp: new Date()
+                };
+                
+                // Import setDoc function
+                const { setDoc } = await import("https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js");
+                
+                // Save to Firestore - document name is the student's name
+                const studentRef = doc(db, 'savedstudents', studentData.name);
+                await setDoc(studentRef, studentData);
+                
+                // Send data to Google Apps Script (Google Sheets + Telegram)
+                const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyD4XbAASJDg0NlmEcs2tNEewgN7m0egdjHuWqDePN8lPqg3I_9PdWoHbUztJhxj7QI/exec';
+                
+                try {
+                    const response = await fetch(GOOGLE_SCRIPT_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(studentData),
+                        mode: 'no-cors' // Required for Google Apps Script
+                    });
+                    console.log('Data sent to Google Sheets and Telegram');
+                } catch (sheetError) {
+                    console.error('Error sending to Google Sheets:', sheetError);
+                    // Don't fail the whole submission if Google Sheets fails
+                }
+                
+                // Show success toast notification
+                showSuccessToast();
+                closeRegistrationModal();
+                
+            } catch (error) {
+                console.error('Error saving registration:', error);
+                alert('Error submitting registration: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit';
+            }
+        });
+        
+        // Show success toast notification
+        function showSuccessToast() {
+            const toast = document.getElementById('successToast');
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000); // Hide after 3 seconds
+        }
+        
+        // Close registration modal on overlay click
+        document.getElementById('registrationModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeRegistrationModal();
+            }
+        });
     </script>
 </body>
 </html>
