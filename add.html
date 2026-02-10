@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admission Management Panel</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Loading & Empty States */
+        .loading-container,
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #e5e7eb;
+            border-top-color: var(--primary-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* iOS Style Modal Overlay */
+        .ios-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            padding: 20px;
+        }
+
+        .ios-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .ios-modal {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 756px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+
+        .ios-modal-overlay.active .ios-modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .ios-modal-header {
+            display: flex;
+            align-items: center;
+            padding: 16px 24px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .header-icon-box {
+            width: 32px;
+            height: 32px;
+            background: #007aff;
+            color: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            margin-right: 12px;
+        }
+
+        .ios-modal-header h2 {
+            font-size: 17px;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
+            flex-grow: 1;
+        }
+
+        .ios-close-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            transition: background 0.2s;
+        }
+
+        .ios-close-btn:hover {
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        .ios-modal-body {
+            padding: 20px 24px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .ios-modal-footer {
+            padding: 12px 24px;
+            border-top: 1px solid #f1f5f9;
+            background: #fff;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        /* Form Styles */
+        .form-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .required {
+            color: #ef4444;
+            margin-left: 3px;
+        }
+
+        .form-control,
+        .form-select {
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            padding: 10px 14px;
+            font-size: 14px;
+            transition: all 0.2s;
+            background-color: #f8fafc;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            background-color: #fff;
+            border-color: #007aff;
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+            outline: none;
+        }
+
+        /* Round Card Style */
+        .round-card {
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid #007aff;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 20px;
+            background: #fafcff;
+        }
+
+        .round-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px dotted #e2e8f0;
+        }
+
+        .round-num {
+            width: 22px;
+            height: 22px;
+            background: #007aff;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .round-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1e293b;
+            text-transform: uppercase;
+            margin: 0;
+        }
+
+        .form-section-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Information Section Headers */
+        .info-section-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            margin: 16px 0 8px;
+        }
+
+        /* Buttons */
+        .btn-ios-cancel {
+            padding: 10px 20px;
+            border-radius: 10px;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            color: #1e293b;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn-ios-cancel:hover {
+            background: #f1f5f9;
+        }
+
+        .btn-ios-save {
+            padding: 10px 24px;
+            border-radius: 10px;
+            background: #007aff;
+            border: none;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(0, 122, 255, 0.2);
+        }
+
+        .btn-ios-save:hover {
+            background: #0066d6;
+            transform: translateY(-1px);
+        }
+
+        .btn-ios-save:active {
+            transform: translateY(0);
+        }
+
+        /* Listing Card Actions */
+        .card-actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0;
+            padding: 0;
+            margin-top: 16px;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 0;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px solid #e5e5ea;
+            background: #f8f9fa;
+            color: #8e8e93;
+        }
+
+        .action-btn:last-child {
+            border-right: none;
+        }
+
+        .action-btn:first-child {
+            border-bottom-left-radius: 16px;
+        }
+
+        .action-btn:last-child {
+            border-bottom-right-radius: 16px;
+        }
+
+        .btn-view:hover {
+            background: #007aff;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #ff9500;
+            color: white;
+        }
+
+        .btn-hide:hover {
+            background: #8e8e93;
+            color: white;
+        }
+
+        .btn-unhide:hover {
+            background: #34c759;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        /* Rounds Table */
+        .ios-rounds-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .ios-rounds-table thead {
+            background: #f8f9fa;
+            position: sticky;
+            top: 0;
+        }
+
+        .ios-rounds-table th {
+            padding: 14px 16px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #8e8e93;
+            text-align: left;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .ios-rounds-table td {
+            padding: 16px;
+            font-size: 14px;
+            color: #1c1c1e;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            vertical-align: middle;
+        }
+
+        .ios-rounds-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .ios-rounds-table tbody tr:hover {
+            background: rgba(0, 122, 255, 0.03);
+        }
+
+        .round-badge-cell {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #007aff 0%, #5856d6 100%);
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            border-radius: 10px;
+        }
+
+        .date-primary {
+            font-weight: 600;
+            color: #1c1c1e;
+        }
+
+        .date-secondary {
+            font-size: 12px;
+            color: #8e8e93;
+            margin-top: 2px;
+        }
+
+        .ios-section-content.empty {
+            color: #c7c7cc;
+            font-style: italic;
+        }
+
+        /* iOS Accordion Styles */
+        .ios-info-section {
+            padding: 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            transition: background-color 0.2s ease;
+        }
+
+        .ios-info-section:hover {
+            background-color: rgba(0, 0, 0, 0.01);
+        }
+
+        .ios-section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 18px 24px;
+            cursor: pointer;
+            margin-bottom: 0;
+            user-select: none;
+        }
+
+        .ios-section-header .chevron {
+            margin-left: auto;
+            font-size: 14px;
+            color: #c7c7cc;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .ios-info-section.active .chevron {
+            transform: rotate(180deg);
+            color: #007aff;
+        }
+
+        .ios-section-content {
+            max-height: 0;
+            overflow: hidden;
+            padding: 0 24px;
+            font-size: 14px;
+            color: #3c3c43;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+        }
+
+        .ios-info-section.active .ios-section-content {
+            max-height: 1000px;
+            padding-bottom: 24px;
+            opacity: 1;
+        }
+
+        .ios-section-header span {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1c1c1e;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        /* University Header in Detail View */
+        .ios-university-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 20px 24px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        .ios-university-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #007aff 0%, #5856d6 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .ios-university-icon i {
+            font-size: 24px;
+            color: white;
+        }
+
+        .ios-university-info h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1c1c1e;
+            margin: 0 0 4px 0;
+            line-height: 1.3;
+        }
+
+        .ios-university-info .edu-level-badge {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 600;
+            color: #1c1c1e;
+            background: #e5e5ea;
+            padding: 4px 10px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        /* Mobile responsive table */
+        @media (max-width: 600px) {
+            .ios-modal {
+                max-width: 100%;
+                margin: 10px;
+                max-height: 90vh;
+            }
+
+            .ios-rounds-table {
+                display: block;
+                overflow-x: auto;
+            }
+
+            .ios-rounds-table th,
+            .ios-rounds-table td {
+                padding: 12px 10px;
+                font-size: 12px;
+            }
+        }
+
+        /* iOS Badge Style */
+        .ios-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px 12px;
+            background: linear-gradient(135deg, #007aff 0%, #5856d6 100%);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            white-space: nowrap;
+            box-shadow: 0 2px 4px rgba(0, 122, 255, 0.2);
+        }
+
+        /* iOS Add Button in Header */
+        .ios-add-btn {
+            background: linear-gradient(135deg, #007aff 0%, #0056b3 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+            cursor: pointer;
+        }
+
+        .ios-add-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 122, 255, 0.4);
+            filter: brightness(1.1);
+        }
+
+        .ios-add-btn:active {
+            transform: translateY(0);
+        }
+
+        .ios-add-btn i {
+            font-size: 18px;
+        }
+
+        /* Expected Badge Styles */
+        .expected-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid #f59e0b;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #92400e;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            animation: pulse-expected 2s ease-in-out infinite;
+        }
+
+        .expected-badge i {
+            font-size: 14px;
+        }
+
+        @keyframes pulse-expected {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+            }
+
+            50% {
+                box-shadow: 0 0 0 8px rgba(245, 158, 11, 0);
+            }
+        }
+
+        .round-badge.round-expected {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            color: #92400e;
+            border: 1px solid #f59e0b;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid main-container">
+        <!-- Dashboard Header -->
+        <header class="header-section">
+            <div class="header-content d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="header-icon"><i class="bi bi-gear-fill"></i></div>
+                    <div class="header-text">
+                        <h1>Manage Admissions</h1>
+                        <p>Administration panel for announcements</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="leads.html" class="ios-add-btn">
+                        <i class="bi bi-people-fill"></i>
+                        <span>View Leads</span>
+                    </a>
+                    <button onclick="openFormModal()" class="ios-add-btn">
+                        <i class="bi bi-plus"></i>
+                        <span>Add Admission</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Listing Filters -->
+        <section class="search-filter-section">
+            <div class="row g-3">
+                <div class="col-12 col-md-7">
+                    <div class="search-box">
+                        <i class="bi bi-search search-icon"></i>
+                        <input type="text" class="form-control" id="searchInput" placeholder="Search University...">
+                    </div>
+                </div>
+                <div class="col-12 col-md-5">
+                    <select class="form-select" id="levelFilter">
+                        <option value="">All Levels</option>
+                        <option value="LANGUAGE COURSE">Language Course</option>
+                        <option value="COLLEGE">College</option>
+                        <option value="BACHELOR">Bachelor</option>
+                        <option value="MASTERS">Masters</option>
+                        <option value="PHD">PhD</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-3 d-flex align-items-center justify-content-end">
+                    <span class="admission-count" id="admissionCount">0 records</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Grid Results -->
+        <div class="row g-4" id="cardsContainer">
+            <div class="col-12" id="loadingState">
+                <div class="loading-container">
+                    <div class="loading-spinner"></div>
+                    <p>Fetching admissions...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Details Modal (Detail View Only) -->
+    <div class="ios-modal-overlay" id="admissionModal">
+        <div class="ios-modal">
+            <div class="ios-modal-header">
+                <div class="header-icon-box"><i class="bi bi-info-circle"></i></div>
+                <h2>Admission Details</h2>
+                <button class="ios-close-btn" onclick="closeModal('admissionModal')"><i class="bi bi-x"></i></button>
+            </div>
+            <div class="ios-modal-body" id="modalBody"></div>
+            <div class="ios-modal-footer">
+                <button class="btn-ios-save" onclick="closeModal('admissionModal')">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Modal (Add/Edit) -->
+    <div class="ios-modal-overlay" id="formModal">
+        <div class="ios-modal">
+            <div class="ios-modal-header">
+                <div class="header-icon-box"><i class="bi bi-mortarboard-fill"></i></div>
+                <h2 id="formModalTitle">Add Admission Record</h2>
+                <button class="ios-close-btn" onclick="closeModal('formModal')"><i class="bi bi-x"></i></button>
+            </div>
+            <div class="ios-modal-body">
+                <form id="admissionForm">
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">EDUCATION LEVEL <span class="required">*</span></label>
+                            <select class="form-select" id="formLevel" required>
+                                <option value="">Choose Education Level...</option>
+                                <option value="LANGUAGE COURSE">Language Course</option>
+                                <option value="COLLEGE">College</option>
+                                <option value="BACHELOR">Bachelor</option>
+                                <option value="MASTERS">Masters</option>
+                                <option value="PHD">PhD</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">UNIVERSITY <span class="required">*</span></label>
+                            <select class="form-select" id="formUniversity" required>
+                                <option value="">Select university...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">NUMBER OF ROUNDS <span class="required">*</span></label>
+                        <select class="form-select w-50" id="roundsSelect" required>
+                            <option value="">Select...</option>
+                            <option value="EXPECTED">Expected (No dates yet)</option>
+                            <option value="1">1 Round</option>
+                            <option value="2">2 Rounds</option>
+                            <option value="3">3 Rounds</option>
+                        </select>
+                    </div>
+
+                    <div id="formRoundsContainer"></div>
+
+                    <div class="info-sections mt-4">
+                        <div class="info-section-header">
+                            <i class="bi bi-info-circle"></i> <span>INFORMATION</span>
+                        </div>
+                        <textarea class="form-control mb-4" id="formInfo" rows="3"
+                            placeholder="General information about the admission..."></textarea>
+
+                        <div class="info-section-header">
+                            <i class="bi bi-book"></i> <span>MAJORS</span>
+                        </div>
+                        <textarea class="form-control mb-4" id="formMajors" rows="3"
+                            placeholder="Available majors and programs..."></textarea>
+
+                        <div class="info-section-header">
+                            <i class="bi bi-trophy"></i> <span>SCHOLARSHIPS OPPORTUNITIES</span>
+                        </div>
+                        <textarea class="form-control mb-4" id="formScholarships" rows="3"
+                            placeholder="Scholarship opportunities and requirements..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="ios-modal-footer">
+                <button type="button" class="btn-ios-cancel" onclick="closeModal('formModal')">Cancel</button>
+                <button form="admissionForm" type="submit" class="btn-ios-save" id="saveBtn">
+                    <i class="bi bi-check-circle"></i> Save
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, getDoc, addDoc, updateDoc, deleteDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDbtscTvtaAj2UKxCddU-0OeUPoAMhc60c",
+            authDomain: "unibridge-7d530.firebaseapp.com",
+            projectId: "unibridge-7d530",
+            databaseURL: "https://unibridge-7d530-default-rtdb.firebaseio.com",
+            storageBucket: "unibridge-7d530.firebasestorage.app",
+            messagingSenderId: "562821836520",
+            appId: "1:562821836520:web:2f4acaff9428ec3f18235d",
+            measurementId: "G-RJKQ3Y9W51"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const cardsContainer = document.getElementById('cardsContainer');
+        const admissionCount = document.getElementById('admissionCount');
+        const searchInput = document.getElementById('searchInput');
+        const levelFilter = document.getElementById('levelFilter');
+
+        let allAdmissions = [];
+        let allUniversities = [];
+        let currentEditingId = null;
+
+        // Utils
+        const formatDate = (d) => d ? d.split('-').reverse().join('.') : '-';
+        window.closeModal = (id) => {
+            document.getElementById(id).classList.remove('active');
+            if (id === 'formModal') {
+                document.getElementById('admissionForm').reset();
+                document.getElementById('formRoundsContainer').innerHTML = '';
+                currentEditingId = null;
+            }
+        };
+
+        function showToast(msg, type = 'success') {
+            const t = document.createElement('div');
+            t.className = `custom-toast`;
+            t.innerHTML = `<i class="bi bi-info-circle-fill text-${type === 'success' ? 'primary' : 'danger'}"></i><span>${msg}</span>`;
+            document.getElementById('toastContainer').appendChild(t);
+            setTimeout(() => t.remove(), 3000);
+        }
+
+        // Dashboard Logic
+        async function loadAdmissions() {
+            const snap = await getDocs(query(collection(db, 'admissions'), orderBy('createdAt', 'desc')));
+            allAdmissions = snap.docs.map(d => ({ id: d.id, data: d.data() }));
+            filterAdmissions();
+        }
+
+        function filterAdmissions() {
+            const term = searchInput.value.toLowerCase();
+            const level = levelFilter.value;
+
+            const filtered = allAdmissions.filter(a =>
+                (!term || a.data.universityName.toLowerCase().includes(term)) &&
+                (!level || a.data.educationLevel === level)
+                // Admins see ALL cards including hidden ones
+            );
+            renderAdmissions(filtered);
+        }
+
+        function renderAdmissions(list) {
+            document.getElementById('loadingState')?.remove();
+            cardsContainer.innerHTML = list.length ? list.map(a => {
+                const isExpected = a.data.isExpected || a.data.roundsCount === 'EXPECTED';
+                const numRounds = isExpected ? 0 : (a.data.roundsCount || a.data.numberOfRounds || (a.data.rounds ? a.data.rounds.length : 0));
+                const isHidden = a.data.isHidden || false;
+
+                // Determine badge class and text
+                let roundBadgeClass, roundText;
+                if (isExpected) {
+                    roundBadgeClass = 'round-expected';
+                    roundText = 'EXPECTED';
+                } else {
+                    roundBadgeClass = numRounds === 1 ? 'round-single' : 'round-multiple';
+                    roundText = numRounds === 1 ? '1 ROUND' : `${numRounds} ROUNDS`;
+                }
+
+                // Generate rounds HTML
+                let roundsHTML = '';
+                if (isExpected) {
+                    // Check if expected date range exists
+                    if (a.data.expectedDateRange && (a.data.expectedDateRange.from || a.data.expectedDateRange.to)) {
+                        const fromDate = formatDate(a.data.expectedDateRange.from);
+                        const toDate = formatDate(a.data.expectedDateRange.to);
+                        roundsHTML = `
+                            <div class="expected-badge">
+                                <i class="bi bi-clock-history"></i>
+                                <span>EXPECTED: ${fromDate || '?'} - ${toDate || '?'}</span>
+                            </div>
+                        `;
+                    } else {
+                        roundsHTML = `
+                            <div class="expected-badge">
+                                <i class="bi bi-clock-history"></i>
+                                <span>EXPECTED - Dates Coming Soon</span>
+                            </div>
+                        `;
+                    }
+                } else if (a.data.rounds && a.data.rounds.length > 0) {
+                    a.data.rounds.forEach((round, index) => {
+                        const fromDate = formatDate(round.onlineApplicationFrom || round.applicationPeriod?.from);
+                        const toDate = formatDate(round.onlineApplicationTo || round.applicationPeriod?.to);
+
+                        if (fromDate && toDate) {
+                            roundsHTML += `
+                                <div class="round-item">
+                                    <span class="round-label">R${index + 1}</span>
+                                    <span class="round-date">${fromDate}</span>
+                                    <span class="round-arrow">→</span>
+                                    <span class="round-date">${toDate}</span>
+                                </div>
+                            `;
+                        }
+                    });
+                }
+
+                if (!roundsHTML) {
+                    roundsHTML = '<p class="no-periods">No application periods set</p>';
+                }
+
+                // Hidden badge HTML
+                const hiddenBadgeHTML = isHidden ? `
+                    <span class="ios-badge" style="background: linear-gradient(135deg, #8e8e93, #636366); margin-left: 8px; font-size: 9px;">
+                        <i class="bi bi-eye-slash"></i> HIDDEN
+                    </span>
+                ` : '';
+
+                return `
+                    <div class="col-12 col-md-6 col-xl-4 admission-card-wrapper" data-id="${a.id}" style="${isHidden ? 'opacity: 0.6;' : ''}">
+                        <div class="admission-card">
+                            <div class="card-header-row">
+                                <div class="university-icon">
+                                    <i class="bi bi-building"></i>
+                                </div>
+                                <div class="university-info">
+                                    <h3 class="university-name">${a.data.universityName || 'Unknown University'}</h3>
+                                </div>
+                                <span class="round-badge ${roundBadgeClass}">${roundText}</span>
+                                ${hiddenBadgeHTML}
+                            </div>
+                            <div class="education-level">
+                                <i class="bi bi-award"></i>
+                                <span>${a.data.educationLevel || 'N/A'}</span>
+                            </div>
+                            <div class="rounds-container ${!roundsHTML.includes('round-item') ? 'empty-rounds' : ''}">
+                                ${roundsHTML}
+                            </div>
+                            <div class="card-actions">
+                                <button class="action-btn btn-view" onclick="viewAdmission('${a.id}')"><i class="bi bi-eye"></i></button>
+                                <button class="action-btn btn-edit" onclick="editAdmission('${a.id}')"><i class="bi bi-pencil"></i></button>
+                                <button class="action-btn ${isHidden ? 'btn-unhide' : 'btn-hide'}" onclick="toggleHideAdmission('${a.id}', ${!isHidden})" title="${isHidden ? 'Show on public page' : 'Hide from public page'}">
+                                    <i class="bi bi-toggle-${isHidden ? 'on' : 'off'}"></i>
+                                </button>
+                                <button class="action-btn btn-delete" onclick="deleteAdmission('${a.id}')"><i class="bi bi-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('') : '<div class="col-12 empty-state"><h3>No records found</h3></div>';
+            admissionCount.textContent = `${list.length} records`;
+        }
+
+        window.deleteAdmission = async (id) => {
+            if (confirm('Delete this record permanently?')) {
+                await deleteDoc(doc(db, 'admissions', id));
+                allAdmissions = allAdmissions.filter(a => a.id !== id);
+                filterAdmissions();
+                showToast('Record deleted');
+            }
+        };
+
+        window.toggleHideAdmission = async (id, hideStatus) => {
+            try {
+                const admission = allAdmissions.find(a => a.id === id);
+                const actionText = hideStatus ? 'hide' : 'unhide';
+
+                if (confirm(`Are you sure you want to ${actionText} "${admission.data.universityName}"?\n\n${hideStatus ? 'Hidden admissions will not appear on the public page.' : 'This admission will become visible on the public page.'}`)) {
+                    await updateDoc(doc(db, 'admissions', id), {
+                        isHidden: hideStatus,
+                        updatedAt: serverTimestamp()
+                    });
+
+                    // Update local data
+                    admission.data.isHidden = hideStatus;
+                    filterAdmissions();
+                    showToast(`Admission ${hideStatus ? 'hidden' : 'unhidden'} successfully`);
+                }
+            } catch (error) {
+                console.error('Error toggling hide status:', error);
+                showToast('Error updating visibility', 'error');
+            }
+        };
+
+        window.toggleAccordion = (id) => {
+            const target = document.getElementById(id);
+            const active = target.classList.contains('active');
+            document.querySelectorAll('.ios-info-section').forEach(s => s.classList.remove('active'));
+            if (!active) target.classList.add('active');
+        };
+
+        // Detail View
+        window.viewAdmission = (id) => {
+            const d = allAdmissions.find(a => a.id === id).data;
+            document.getElementById('modalBody').innerHTML = `
+                <div class="ios-university-header">
+                    <div class="ios-university-icon"><i class="bi bi-building"></i></div>
+                    <div class="ios-university-info">
+                        <h3>${d.universityName}</h3><span class="edu-level-badge">${d.educationLevel}</span>
+                    </div>
+                </div>
+                <table class="ios-rounds-table w-100">
+                    <thead><tr><th>Round</th><th>Application</th><th>Docs</th><th>Interview</th><th>Result</th></tr></thead>
+                    <tbody>${d.rounds?.map((r, i) => `
+                        <tr>
+                            <td><span class="round-badge-cell">R${i + 1}</span></td>
+                            <td><div class="date-primary">${formatDate(r.onlineApplicationFrom) || '-'}</div>${formatDate(r.onlineApplicationTo) ? `<div class="date-secondary">to ${formatDate(r.onlineApplicationTo)}</div>` : ''}</td>
+                            <td>${formatDate(r.documentSubmission) || '-'}</td>
+                            <td>${formatDate(r.interview) || '-'}</td>
+                            <td>${formatDate(r.announcement) || '-'}</td>
+                        </tr>`).join('') || '<tr><td colspan="5" class="text-center p-4 text-muted">No rounds configured</td></tr>'}
+                    </tbody>
+                </table>
+                <div class="ios-info-section" id="v-info">
+                    <div class="ios-section-header" onclick="toggleAccordion('v-info')"><i class="bi bi-info-circle-fill"></i><span>Information</span><i class="bi bi-chevron-down chevron"></i></div>
+                    <div class="ios-section-content">${d.information || 'No information provided'}</div>
+                </div>
+                <div class="ios-info-section" id="v-majors">
+                    <div class="ios-section-header" onclick="toggleAccordion('v-majors')"><i class="bi bi-book-fill"></i><span>Majors</span><i class="bi bi-chevron-down chevron"></i></div>
+                    <div class="ios-section-content">${d.majors || 'No majors specified'}</div>
+                </div>
+                <div class="ios-info-section" id="v-sch">
+                    <div class="ios-section-header" onclick="toggleAccordion('v-sch')"><i class="bi bi-trophy-fill"></i><span>Scholarships</span><i class="bi bi-chevron-down chevron"></i></div>
+                    <div class="ios-section-content">${d.scholarships || 'No scholarship info'}</div>
+                </div>
+            `;
+            document.getElementById('admissionModal').classList.add('active');
+        };
+
+        // Form Logic
+        const renderRoundForms = (count) => {
+            let html = '';
+            for (let i = 1; i <= count; i++) html += `
+                <div class="round-card">
+                    <div class="round-header"><span class="round-num">${i}</span><span class="round-title">ROUND ${i}</span></div>
+                    
+                    <div class="form-section-title">ONLINE APPLICATION PERIOD</div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-6">
+                            <label class="form-label">FROM</label>
+                            <input type="date" class="form-control" id="r${i}Start">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">TO</label>
+                            <input type="date" class="form-control" id="r${i}End">
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-6">
+                            <label class="form-label">DOCUMENT SUBMISSION</label>
+                            <input type="date" class="form-control" id="r${i}Docs">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">INTERVIEW</label>
+                            <input type="date" class="form-control" id="r${i}Int">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="form-label">ANNOUNCEMENT</label>
+                        <input type="date" class="form-control" id="r${i}Ann">
+                    </div>
+                </div>`;
+            document.getElementById('formRoundsContainer').innerHTML = html;
+        }
+
+        document.getElementById('roundsSelect').addEventListener('change', e => {
+            const val = e.target.value;
+            if (val === 'EXPECTED') {
+                document.getElementById('formRoundsContainer').innerHTML = `
+                    <div class="round-card" style="background: linear-gradient(135deg, #fef3c7, #fde68a); border-left-color: #f59e0b;">
+                        <div class="round-header">
+                            <span class="round-num" style="background: #f59e0b;"><i class="bi bi-clock-history"></i></span>
+                            <span class="round-title" style="color: #92400e;">EXPECTED DATE RANGE</span>
+                        </div>
+                        
+                        <div class="form-section-title" style="color: #78350f;">Expected timeframe for admission announcement</div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <label class="form-label">FROM (Expected Start)</label>
+                                <input type="date" class="form-control" id="expectedFrom">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">TO (Expected End)</label>
+                                <input type="date" class="form-control" id="expectedTo">
+                            </div>
+                        </div>
+                        <div style="font-size: 12px; color: #78350f; font-style: italic;">
+                            <i class="bi bi-info-circle"></i> These are approximate dates. Students will see "Expected between [dates]"
+                        </div>
+                    </div>
+                `;
+            } else if (parseInt(val)) {
+                renderRoundForms(parseInt(val));
+            } else {
+                document.getElementById('formRoundsContainer').innerHTML = '';
+            }
+        });
+
+        window.openFormModal = (id = null) => {
+            currentEditingId = id;
+            document.getElementById('formModalTitle').textContent = id ? 'Edit Admission Record' : 'Add Admission Record';
+            document.getElementById('formModal').classList.add('active');
+        };
+
+        window.editAdmission = async (id) => {
+            const docRef = doc(db, 'admissions', id);
+            const snap = await getDoc(docRef);
+            if (!snap.exists()) return;
+            const d = snap.data();
+
+            openFormModal(id);
+            document.getElementById('formLevel').value = d.educationLevel;
+            updateUniversityDropdown(d.educationLevel); // Update dropdown based on level
+            document.getElementById('formUniversity').value = d.universityId;
+            document.getElementById('formInfo').value = d.information || '';
+            document.getElementById('formMajors').value = d.majors || '';
+            document.getElementById('formScholarships').value = d.scholarships || '';
+
+            // Handle EXPECTED status
+            const isExpected = d.isExpected || d.roundsCount === 'EXPECTED';
+            if (isExpected) {
+                document.getElementById('roundsSelect').value = 'EXPECTED';
+                document.getElementById('formRoundsContainer').innerHTML = `
+                    <div class="round-card" style="background: linear-gradient(135deg, #fef3c7, #fde68a); border-left-color: #f59e0b;">
+                        <div class="round-header">
+                            <span class="round-num" style="background: #f59e0b;"><i class="bi bi-clock-history"></i></span>
+                            <span class="round-title" style="color: #92400e;">EXPECTED DATE RANGE</span>
+                        </div>
+                        
+                        <div class="form-section-title" style="color: #78350f;">Expected timeframe for admission announcement</div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <label class="form-label">FROM (Expected Start)</label>
+                                <input type="date" class="form-control" id="expectedFrom">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">TO (Expected End)</label>
+                                <input type="date" class="form-control" id="expectedTo">
+                            </div>
+                        </div>
+                        <div style="font-size: 12px; color: #78350f; font-style: italic;">
+                            <i class="bi bi-info-circle"></i> These are approximate dates. Students will see "Expected between [dates]"
+                        </div>
+                    </div>
+                `;
+                // Populate expected date range if exists
+                if (d.expectedDateRange) {
+                    setTimeout(() => {
+                        if (d.expectedDateRange.from) document.getElementById('expectedFrom').value = d.expectedDateRange.from;
+                        if (d.expectedDateRange.to) document.getElementById('expectedTo').value = d.expectedDateRange.to;
+                    }, 100);
+                }
+            } else {
+                const count = d.roundsCount || d.rounds?.length || 1;
+                document.getElementById('roundsSelect').value = count;
+                renderRoundForms(count);
+
+                d.rounds?.forEach((r, i) => {
+                    const idx = i + 1;
+                    if (document.getElementById(`r${idx}Start`)) {
+                        document.getElementById(`r${idx}Start`).value = r.onlineApplicationFrom || '';
+                        document.getElementById(`r${idx}End`).value = r.onlineApplicationTo || '';
+                        document.getElementById(`r${idx}Docs`).value = r.documentSubmission || '';
+                        document.getElementById(`r${idx}Int`).value = r.interview || '';
+                        document.getElementById(`r${idx}Ann`).value = r.announcement || '';
+                    }
+                });
+            }
+        };
+
+        const updateUniversityDropdown = (level) => {
+            const sel = document.getElementById('formUniversity');
+            const currentValue = sel.value; // Store currently selected value if any
+
+            sel.innerHTML = '<option value="">Select university...</option>';
+
+            if (!level) return; // Don't show anything if no level is selected
+
+            const filtered = allUniversities.filter(u => u.levelName === level);
+
+            filtered.forEach(u => {
+                const opt = document.createElement('option');
+                opt.value = u.id;
+                opt.textContent = u.name || u.id;
+                sel.appendChild(opt);
+            });
+
+            // If we were editing, try to restore the value
+            if (currentValue) sel.value = currentValue;
+        };
+
+        const loadUnis = async () => {
+            const snap = await getDocs(collection(db, 'universities'));
+            allUniversities = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            updateUniversityDropdown(''); // Initially show all or none
+        };
+
+        document.getElementById('formLevel').addEventListener('change', (e) => {
+            updateUniversityDropdown(e.target.value);
+        });
+
+        document.getElementById('admissionForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('saveBtn');
+            const roundsValue = document.getElementById('roundsSelect').value;
+            const isExpected = roundsValue === 'EXPECTED';
+            const count = isExpected ? 0 : parseInt(roundsValue);
+            btn.disabled = true; btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Saving...';
+
+            const rounds = [];
+            for (let i = 1; i <= count; i++) {
+                rounds.push({
+                    roundNumber: i,
+                    onlineApplicationFrom: document.getElementById(`r${i}Start`).value || null,
+                    onlineApplicationTo: document.getElementById(`r${i}End`).value || null,
+                    documentSubmission: document.getElementById(`r${i}Docs`).value || null,
+                    interview: document.getElementById(`r${i}Int`).value || null,
+                    announcement: document.getElementById(`r${i}Ann`).value || null
+                });
+            }
+
+            const data = {
+                educationLevel: document.getElementById('formLevel').value,
+                universityId: document.getElementById('formUniversity').value,
+                universityName: document.getElementById('formUniversity').options[document.getElementById('formUniversity').selectedIndex].text,
+                roundsCount: isExpected ? 'EXPECTED' : count,
+                isExpected: isExpected,
+                rounds,
+                information: document.getElementById('formInfo').value,
+                majors: document.getElementById('formMajors').value,
+                scholarships: document.getElementById('formScholarships').value,
+                updatedAt: serverTimestamp()
+            };
+
+            // Store expected date range if EXPECTED is selected
+            if (isExpected) {
+                const expectedFrom = document.getElementById('expectedFrom')?.value || null;
+                const expectedTo = document.getElementById('expectedTo')?.value || null;
+                data.expectedDateRange = {
+                    from: expectedFrom,
+                    to: expectedTo
+                };
+            }
+
+            if (currentEditingId) await updateDoc(doc(db, 'admissions', currentEditingId), data);
+            else {
+                data.createdAt = new Date().toISOString();
+                await addDoc(collection(db, 'admissions'), data);
+            }
+
+            closeModal('formModal');
+            showToast('Record saved successfully');
+            loadAdmissions();
+            btn.disabled = false; btn.innerHTML = '<i class="bi bi-check-circle"></i> Save';
+        };
+
+        searchInput.oninput = filterAdmissions;
+        levelFilter.onchange = filterAdmissions;
+        loadUnis(); loadAdmissions();
+    </script>
+</body>
+
+</html>

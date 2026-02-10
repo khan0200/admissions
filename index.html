@@ -1,0 +1,1705 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>University Admissions</title>
+    <meta name="description" content="Manage university admission announcements">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Loading State */
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #e5e7eb;
+            border-top-color: var(--primary-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            color: #d1d5db;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .add-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: var(--primary-blue);
+            color: white;
+            border-radius: var(--border-radius-md);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition-fast);
+        }
+
+        .add-btn:hover {
+            background: var(--primary-blue-hover);
+            color: white;
+        }
+
+        /* iOS Header Button */
+        .ios-add-btn {
+            background: linear-gradient(135deg, #007aff 0%, #5856d6 100%);
+            color: white;
+            padding: 10px 18px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+        }
+
+        .ios-add-btn:hover {
+            transform: scale(0.97);
+            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.2);
+            color: white;
+            filter: brightness(1.1);
+        }
+
+        .ios-add-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Premium iOS Card Style */
+        .admission-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 20px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05),
+                0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            padding: 24px;
+            height: 100%;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .admission-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.1);
+            border-color: rgba(0, 122, 255, 0.2);
+        }
+
+        .university-icon {
+            width: 44px;
+            height: 44px;
+            background: rgba(0, 122, 255, 0.1);
+            color: #007aff;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .card-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #f3f4f6;
+        }
+
+        .action-btn {
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 10px;
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            background: white;
+            color: #1c1c1e;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .action-btn.view-btn {
+            background: #f2f2f7;
+            color: #007aff;
+            border-color: transparent;
+        }
+
+        .action-btn.view-btn:hover {
+            background: #007aff;
+            color: white;
+        }
+
+        .action-btn.apply-btn {
+            background: linear-gradient(135deg, #34c759 0%, #30d158 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .action-btn.apply-btn:hover {
+            transform: scale(0.98);
+            box-shadow: 0 4px 15px rgba(52, 199, 89, 0.4);
+        }
+
+        .action-btn.delete:hover {
+            border-color: #ef4444;
+            color: #ef4444;
+            background: #fef2f2;
+        }
+
+        /* Registration Modal Styles */
+        .ios-form-group {
+            margin-bottom: 20px;
+        }
+
+        .ios-form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1c1c1e;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        .ios-form-input {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 15px;
+            color: #1c1c1e;
+            background: rgba(120, 120, 128, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .ios-form-input:focus {
+            outline: none;
+            border-color: #007aff;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+        }
+
+        .ios-form-input.uppercase {
+            text-transform: uppercase;
+        }
+
+        .ios-form-textarea {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 15px;
+            color: #1c1c1e;
+            background: rgba(120, 120, 128, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .ios-form-textarea:focus {
+            outline: none;
+            border-color: #007aff;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+        }
+
+        .ios-modal-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .ios-cancel-btn {
+            padding: 14px;
+            background: rgba(120, 120, 128, 0.12);
+            color: #1c1c1e;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .ios-cancel-btn:hover {
+            background: rgba(120, 120, 128, 0.2);
+        }
+
+        .ios-submit-btn {
+            padding: 14px;
+            background: linear-gradient(135deg, #007aff 0%, #5856d6 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .ios-submit-btn:hover {
+            transform: scale(0.98);
+            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.4);
+        }
+
+        .ios-submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* iOS Style Modal */
+        .ios-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            padding: 20px;
+        }
+
+        .ios-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .ios-modal {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 756px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+
+        .ios-modal-overlay.active .ios-modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .ios-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            background: rgba(248, 248, 248, 0.8);
+        }
+
+        .ios-modal-header h2 {
+            font-size: 17px;
+            font-weight: 600;
+            color: #1c1c1e;
+            margin: 0;
+            letter-spacing: -0.02em;
+        }
+
+        .ios-close-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(120, 120, 128, 0.12);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #8e8e93;
+        }
+
+        .ios-close-btn:hover {
+            background: rgba(120, 120, 128, 0.2);
+            color: #1c1c1e;
+        }
+
+        .ios-close-btn i {
+            font-size: 14px;
+        }
+
+        .ios-modal-body {
+            padding: 0;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .ios-modal-body::-webkit-scrollbar {
+            width: 0;
+        }
+
+        /* iOS List Style */
+        .ios-info-group {
+            padding: 16px 24px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        .ios-info-group:last-child {
+            border-bottom: none;
+        }
+
+        .ios-info-label {
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #8e8e93;
+            margin-bottom: 6px;
+        }
+
+        .ios-info-value {
+            font-size: 15px;
+            color: #1c1c1e;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+
+        .ios-info-value.empty {
+            color: #c7c7cc;
+            font-style: italic;
+        }
+
+        /* iOS Badge */
+        .ios-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: linear-gradient(135deg, #007aff 0%, #5856d6 100%);
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 20px;
+        }
+
+        /* iOS Rounds List */
+        .ios-rounds-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .ios-round-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            background: rgba(120, 120, 128, 0.08);
+            border-radius: 12px;
+        }
+
+        .ios-round-number {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #007aff 0%, #5856d6 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .ios-round-dates {
+            flex: 1;
+            font-size: 14px;
+            color: #1c1c1e;
+        }
+
+        .ios-round-dates .date-range {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ios-round-dates .arrow {
+            color: #007aff;
+        }
+
+        /* iOS Modal Footer */
+        .ios-modal-footer {
+            padding: 20px 24px 28px;
+            border-top: 1px solid rgba(0, 0, 0, 0.08);
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .ios-done-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #007aff 0%, #5856d6 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .ios-done-btn:hover {
+            transform: scale(0.98);
+            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.4);
+        }
+
+        .ios-done-btn:active {
+            transform: scale(0.96);
+        }
+
+        /* University Header in Modal */
+        .ios-university-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 20px 24px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        .ios-university-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #007aff 0%, #5856d6 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .ios-university-icon i {
+            font-size: 24px;
+            color: white;
+        }
+
+        .ios-university-info h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1c1c1e;
+            margin: 0 0 4px 0;
+            line-height: 1.3;
+        }
+
+        .ios-university-info .edu-level {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 600;
+            color: #1c1c1e;
+            background: #e5e5ea;
+            padding: 4px 10px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        /* Rounds Table */
+        .ios-rounds-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .ios-rounds-table thead {
+            background: #f8f9fa;
+            position: sticky;
+            top: 0;
+        }
+
+        .ios-rounds-table th {
+            padding: 14px 16px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #8e8e93;
+            text-align: left;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .ios-rounds-table td {
+            padding: 16px;
+            font-size: 14px;
+            color: #1c1c1e;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            vertical-align: middle;
+        }
+
+        .ios-rounds-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .ios-rounds-table tbody tr:hover {
+            background: rgba(0, 122, 255, 0.03);
+        }
+
+        .round-badge-cell {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #007aff 0%, #5856d6 100%);
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            border-radius: 10px;
+        }
+
+        .date-primary {
+            font-weight: 600;
+            color: #1c1c1e;
+        }
+
+        .date-secondary {
+            font-size: 12px;
+            color: #8e8e93;
+            margin-top: 2px;
+        }
+
+        .ios-section-content.empty {
+            color: #c7c7cc;
+            font-style: italic;
+        }
+
+        /* iOS Accordion Styles */
+        .ios-info-section {
+            padding: 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            transition: background-color 0.2s ease;
+        }
+
+        .ios-info-section:hover {
+            background-color: rgba(0, 0, 0, 0.01);
+        }
+
+        .ios-section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 18px 24px;
+            cursor: pointer;
+            margin-bottom: 0;
+            user-select: none;
+        }
+
+        .ios-section-header .chevron {
+            margin-left: auto;
+            font-size: 14px;
+            color: #c7c7cc;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .ios-info-section.active .chevron {
+            transform: rotate(180deg);
+            color: #007aff;
+        }
+
+        .ios-section-content {
+            max-height: 0;
+            overflow: hidden;
+            padding: 0 24px;
+            font-size: 14px;
+            color: #3c3c43;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+        }
+
+        .ios-info-section.active .ios-section-content {
+            max-height: 1000px;
+            /* Large enough to fit content */
+            padding-bottom: 24px;
+            opacity: 1;
+        }
+
+        .ios-section-header span {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1c1c1e;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        /* Mobile responsive table */
+        @media (max-width: 600px) {
+            .ios-modal {
+                max-width: 100%;
+                margin: 10px;
+                max-height: 90vh;
+            }
+
+            .ios-rounds-table {
+                display: block;
+                overflow-x: auto;
+            }
+
+            .ios-rounds-table th,
+            .ios-rounds-table td {
+                padding: 12px 10px;
+                font-size: 12px;
+            }
+        }
+
+        /* Success Toast Notification */
+        .success-toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: linear-gradient(135deg, #34c759 0%, #30d158 100%);
+            color: white;
+            padding: 16px 28px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(52, 199, 89, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            font-size: 15px;
+            z-index: 10000;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .success-toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .success-toast i {
+            font-size: 24px;
+            animation: checkmark 0.6s ease;
+        }
+
+        @keyframes checkmark {
+            0% {
+                transform: scale(0) rotate(-45deg);
+            }
+
+            50% {
+                transform: scale(1.2) rotate(5deg);
+            }
+
+            100% {
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        /* Expected Badge Styles */
+        .expected-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid #f59e0b;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #92400e;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            animation: pulse-expected 2s ease-in-out infinite;
+        }
+
+        .expected-badge i {
+            font-size: 14px;
+        }
+
+        @keyframes pulse-expected {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+            }
+
+            50% {
+                box-shadow: 0 0 0 8px rgba(245, 158, 11, 0);
+            }
+        }
+
+        .round-badge.round-expected {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            color: #92400e;
+            border: 1px solid #f59e0b;
+        }
+
+        /* Status-based flashlight animations */
+        @keyframes pulseGreen {
+
+            0%,
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+            }
+
+            50% {
+                transform: scale(1.15);
+                box-shadow: 0 0 20px 5px rgba(34, 197, 94, 0.3);
+            }
+        }
+
+        @keyframes rippleGreen {
+            0% {
+                transform: scale(1);
+                opacity: 0.6;
+            }
+
+            100% {
+                transform: scale(2.5);
+                opacity: 0;
+            }
+        }
+
+        @keyframes pulseYellow {
+
+            0%,
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7);
+            }
+
+            50% {
+                transform: scale(1.15);
+                box-shadow: 0 0 20px 5px rgba(234, 179, 8, 0.3);
+            }
+        }
+
+        @keyframes rippleYellow {
+            0% {
+                transform: scale(1);
+                opacity: 0.6;
+            }
+
+            100% {
+                transform: scale(2.5);
+                opacity: 0;
+            }
+        }
+
+        @keyframes pulseBlue {
+
+            0%,
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+            }
+
+            50% {
+                transform: scale(1.15);
+                box-shadow: 0 0 20px 5px rgba(59, 130, 246, 0.3);
+            }
+        }
+
+        @keyframes rippleBlue {
+            0% {
+                transform: scale(1);
+                opacity: 0.6;
+            }
+
+            100% {
+                transform: scale(2.5);
+                opacity: 0;
+            }
+        }
+
+        .rounds-container.status-ongoing {
+            background: rgba(236, 253, 245, 0.3) !important;
+            position: relative;
+            padding-right: 55px;
+        }
+
+        .rounds-container.status-ongoing::after {
+            content: '';
+            position: absolute;
+            right: 22px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 10px;
+            height: 10px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: pulseGreen 2s ease-in-out infinite;
+            margin-top: -8px;
+        }
+
+        .rounds-container.status-ongoing::before {
+            content: 'Live';
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 8px;
+            font-weight: 700;
+            color: #16a34a;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 8px;
+        }
+
+        .rounds-container.status-upcoming {
+            background: rgba(254, 252, 232, 0.3) !important;
+            position: relative;
+            padding-right: 75px;
+        }
+
+        .rounds-container.status-upcoming::after {
+            content: '';
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 10px;
+            height: 10px;
+            background: #eab308;
+            border-radius: 50%;
+            animation: pulseYellow 2s ease-in-out infinite;
+            margin-top: -8px;
+        }
+
+        .rounds-container.status-upcoming::before {
+            content: 'Upcoming';
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 8px;
+            font-weight: 700;
+            color: #a16207;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 8px;
+        }
+
+        .rounds-container.status-soon {
+            background: rgba(240, 249, 255, 0.3) !important;
+            position: relative;
+            padding-right: 60px;
+        }
+
+        .rounds-container.status-soon::after {
+            content: '';
+            position: absolute;
+            right: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 10px;
+            height: 10px;
+            background: #3b82f6;
+            border-radius: 50%;
+            animation: pulseBlue 2s ease-in-out infinite;
+            margin-top: -8px;
+        }
+
+        .rounds-container.status-soon::before {
+            content: 'Soon';
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 8px;
+            font-weight: 700;
+            color: #1d4ed8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 8px;
+        }
+
+        .status-badge {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid main-container">
+        <header class="header-section">
+            <div class="header-content d-flex align-items-center">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="header-icon">
+                        <i class="bi bi-mortarboard-fill"></i>
+                    </div>
+                    <div class="header-text">
+                        <h1>University Admissions</h1>
+                        <p>Manage university admission announcements</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Search and Filter Section -->
+        <section class="search-filter-section">
+            <div class="row g-3 align-items-center">
+                <div class="col-12 col-lg-7">
+                    <div class="search-box">
+                        <i class="bi bi-search search-icon"></i>
+                        <input type="text" class="form-control" id="searchInput"
+                            placeholder="Search by university name...">
+                    </div>
+                </div>
+                <div class="col-12 col-lg-3">
+                    <div class="filter-dropdown">
+                        <select class="form-select" id="levelFilter">
+                            <option value="">All Education Levels</option>
+                            <option value="LANGUAGE COURSE">Language Course</option>
+                            <option value="COLLEGE">College</option>
+                            <option value="BACHELOR">Bachelor</option>
+                            <option value="MASTERS">Masters</option>
+                            <option value="PHD">PhD</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-2 text-end">
+                    <span class="admission-count" id="admissionCount">Loading...</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Admission Cards Section -->
+        <section class="cards-section">
+            <div class="row g-4" id="cardsContainer">
+                <!-- Loading State -->
+                <div class="col-12" id="loadingState">
+                    <div class="loading-container">
+                        <div class="loading-spinner"></div>
+                        <p>Loading admissions...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- iOS Style Modal -->
+    <div class="ios-modal-overlay" id="admissionModal">
+        <div class="ios-modal">
+            <div class="ios-modal-header">
+                <h2>Admission Details</h2>
+                <button class="ios-close-btn" onclick="closeModal()">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+            <div class="ios-modal-body" id="modalBody">
+                <!-- Content will be injected here -->
+            </div>
+            <div class="ios-modal-footer">
+                <button class="ios-done-btn" onclick="closeModal()">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registration Modal -->
+    <div class="ios-modal-overlay" id="registrationModal">
+        <div class="ios-modal" style="max-width: 500px;">
+            <div class="ios-modal-header">
+                <h2>Registration</h2>
+                <button class="ios-close-btn" onclick="closeRegistrationModal()">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+            <div class="ios-modal-body" style="padding: 24px;">
+                <form id="registrationForm">
+                    <div class="ios-form-group">
+                        <label class="ios-form-label" for="studentName">Name</label>
+                        <input type="text" id="studentName" class="ios-form-input uppercase"
+                            placeholder="Enter your name" required>
+                    </div>
+                    <div class="ios-form-group">
+                        <label class="ios-form-label" for="studentNumber">Phone Number</label>
+                        <input type="tel" id="studentNumber" class="ios-form-input" placeholder="+998-XX-XXX-XXXX"
+                            maxlength="17" required>
+                    </div>
+                    <div class="ios-form-group">
+                        <label class="ios-form-label" for="studentMessage">Message</label>
+                        <textarea id="studentMessage" class="ios-form-textarea" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="ios-modal-footer">
+                <div class="ios-modal-actions">
+                    <button class="ios-cancel-btn" onclick="closeRegistrationModal()">Cancel</button>
+                    <button class="ios-submit-btn" id="submitRegistration">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Toast Notification -->
+    <div class="success-toast" id="successToast">
+        <i class="bi bi-check-circle-fill"></i>
+        <span>Registration Successful!</span>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDbtscTvtaAj2UKxCddU-0OeUPoAMhc60c",
+            authDomain: "unibridge-7d530.firebaseapp.com",
+            databaseURL: "https://unibridge-7d530-default-rtdb.firebaseio.com",
+            projectId: "unibridge-7d530",
+            storageBucket: "unibridge-7d530.firebasestorage.app",
+            messagingSenderId: "562821836520",
+            appId: "1:562821836520:web:2f4acaff9428ec3f18235d",
+            measurementId: "G-RJKQ3Y9W51"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // DOM Elements
+        const cardsContainer = document.getElementById('cardsContainer');
+        const loadingState = document.getElementById('loadingState');
+        const admissionCount = document.getElementById('admissionCount');
+        const searchInput = document.getElementById('searchInput');
+        const levelFilter = document.getElementById('levelFilter');
+
+        let allAdmissions = [];
+
+        // Format date from YYYY-MM-DD to DD.MM.YYYY
+        function formatDate(dateStr) {
+            if (!dateStr) return null;
+            const parts = dateStr.split('-');
+            if (parts.length === 3) {
+                return `${parts[2]}.${parts[1]}.${parts[0]}`;
+            }
+            return dateStr;
+        }
+
+        // Get admission status based on dates
+        function getAdmissionStatus(admission) {
+            if (!admission.rounds || admission.rounds.length === 0) {
+                return { status: 'normal', priority: 4 };
+            }
+
+            const now = new Date();
+            now.setHours(0, 0, 0, 0); // Reset time to midnight for accurate comparison
+
+            // Check all rounds for the earliest applicable status
+            for (const round of admission.rounds) {
+                const fromDate = round.onlineApplicationFrom || round.applicationPeriod?.from;
+                const toDate = round.onlineApplicationTo || round.applicationPeriod?.to;
+
+                if (!fromDate || !toDate) continue;
+
+                const startDate = new Date(fromDate);
+                const endDate = new Date(toDate);
+                startDate.setHours(0, 0, 0, 0);
+                endDate.setHours(0, 0, 0, 0);
+
+                // ONGOING: Current date is between start and end dates
+                if (now >= startDate && now <= endDate) {
+                    return { status: 'ongoing', priority: 1, label: '🟢 OPEN NOW' };
+                }
+
+                // UPCOMING: Starts within 10 days
+                const daysUntilStart = Math.ceil((startDate - now) / (1000 * 60 * 60 * 24));
+                if (daysUntilStart > 0 && daysUntilStart <= 10) {
+                    return { status: 'upcoming', priority: 2, label: `⚠️ OPENS IN ${daysUntilStart} DAY${daysUntilStart > 1 ? 'S' : ''}` };
+                }
+
+                // SOON: Starts within 30 days
+                if (daysUntilStart > 10 && daysUntilStart <= 30) {
+                    return { status: 'soon', priority: 3, label: `🔵 OPENS IN ${daysUntilStart} DAYS` };
+                }
+            }
+
+            return { status: 'normal', priority: 4 };
+        }
+
+        // Generate admission card HTML
+        function generateCardHTML(admission, docId) {
+            const isExpected = admission.isExpected || admission.roundsCount === 'EXPECTED';
+            const numRounds = isExpected ? 0 : (admission.roundsCount || admission.numberOfRounds || (admission.rounds ? admission.rounds.length : 0));
+
+            // Get status for sorting and visual effects
+            const statusInfo = getAdmissionStatus(admission);
+            const statusClass = statusInfo.status !== 'normal' ? `status-${statusInfo.status}` : '';
+
+            // Determine badge class and text
+            let roundBadgeClass, roundText;
+            if (isExpected) {
+                roundBadgeClass = 'round-expected';
+                roundText = 'EXPECTED';
+            } else {
+                roundBadgeClass = numRounds === 1 ? 'round-single' : 'round-multiple';
+                roundText = numRounds === 1 ? '1 ROUND' : `${numRounds} ROUNDS`;
+            }
+
+            // Status badge HTML
+            let statusBadgeHTML = '';
+            if (statusInfo.label) {
+                statusBadgeHTML = `<div class="status-badge ${statusInfo.status}">${statusInfo.label}</div>`;
+            }
+
+            // Generate rounds HTML
+            let roundsHTML = '';
+            if (isExpected) {
+                // Show EXPECTED badge with date range if available
+                if (admission.expectedDateRange && (admission.expectedDateRange.from || admission.expectedDateRange.to)) {
+                    const fromDate = formatDate(admission.expectedDateRange.from);
+                    const toDate = formatDate(admission.expectedDateRange.to);
+                    roundsHTML = `
+                        <div class="expected-badge">
+                            <i class="bi bi-clock-history"></i>
+                            <span>EXPECTED: ${fromDate || '?'} - ${toDate || '?'}</span>
+                        </div>
+                    `;
+                } else {
+                    roundsHTML = `
+                        <div class="expected-badge">
+                            <i class="bi bi-clock-history"></i>
+                            <span>EXPECTED - Dates Coming Soon</span>
+                        </div>
+                    `;
+                }
+            } else if (admission.rounds && admission.rounds.length > 0) {
+                admission.rounds.forEach((round, index) => {
+                    // Support both old and new field names
+                    const fromDate = formatDate(round.onlineApplicationFrom || round.applicationPeriod?.from);
+                    const toDate = formatDate(round.onlineApplicationTo || round.applicationPeriod?.to);
+
+                    if (fromDate && toDate) {
+                        roundsHTML += `
+                            <div class="round-item">
+                                <span class="round-label">R${index + 1}</span>
+                                <span class="round-date">${fromDate}</span>
+                                <span class="round-arrow">→</span>
+                                <span class="round-date">${toDate}</span>
+                            </div>
+                        `;
+                    }
+                });
+            }
+
+            if (!roundsHTML) {
+                roundsHTML = '<p class="no-periods">No application periods set</p>';
+            }
+
+            return `
+                <div class="col-12 col-md-6 col-xl-4 admission-card-wrapper" data-id="${docId}" data-priority="${statusInfo.priority}">
+                    <div class="admission-card">
+                        <div class="card-header-row">
+                            <div class="university-icon">
+                                <i class="bi bi-building"></i>
+                            </div>
+                            <div class="university-info">
+                                <h3 class="university-name">${admission.universityName || 'Unknown University'}</h3>
+                            </div>
+                            <span class="round-badge ${roundBadgeClass}">${roundText}</span>
+                        </div>
+                        <div class="education-level">
+                            <i class="bi bi-award"></i>
+                            <span>${admission.educationLevel || 'N/A'}</span>
+                        </div>
+                        ${statusBadgeHTML}
+                        <div class="rounds-container ${statusClass} ${!roundsHTML.includes('round-item') ? 'empty-rounds' : ''}">
+                            ${roundsHTML}
+                        </div>
+                        <div class="card-actions">
+                            <button class="action-btn view-btn" onclick="viewAdmission('${docId}')">
+                                <i class="bi bi-eye"></i> View
+                            </button>
+                            <button class="action-btn apply-btn" onclick="openRegistrationModal('${docId}')">
+                                <i class="bi bi-telephone-fill"></i> Apply
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Render admissions
+        function renderAdmissions(admissions) {
+            if (admissions.length === 0) {
+                cardsContainer.innerHTML = `
+                    <div class="col-12">
+                        <div class="empty-state">
+                            <i class="bi bi-inbox"></i>
+                            <h3>No admissions found</h3>
+                            <p>There are no active admission announcements at the moment.</p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Sort by priority: 1 (ongoing) > 2 (upcoming) > 3 (soon) > 4 (normal)
+                const sortedAdmissions = admissions.map(a => ({
+                    ...a,
+                    statusInfo: getAdmissionStatus(a.data)
+                })).sort((a, b) => a.statusInfo.priority - b.statusInfo.priority);
+
+                cardsContainer.innerHTML = sortedAdmissions.map(a => generateCardHTML(a.data, a.id)).join('');
+            }
+
+            admissionCount.textContent = `${admissions.length} admission${admissions.length !== 1 ? 's' : ''}`;
+        }
+
+        // Filter admissions
+        function filterAdmissions() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const levelValue = levelFilter.value;
+
+            const filtered = allAdmissions.filter(admission => {
+                const matchesSearch = !searchTerm ||
+                    (admission.data.universityName && admission.data.universityName.toLowerCase().includes(searchTerm));
+                const matchesLevel = !levelValue ||
+                    admission.data.educationLevel === levelValue;
+                const isNotHidden = !admission.data.isHidden; // Hide hidden admissions from public
+
+                return matchesSearch && matchesLevel && isNotHidden;
+            });
+
+            renderAdmissions(filtered);
+        }
+
+
+        // Load admissions from Firestore
+        async function loadAdmissions() {
+            try {
+                const admissionsRef = collection(db, 'admissions');
+                const q = query(admissionsRef, orderBy('createdAt', 'desc'));
+                const snapshot = await getDocs(q);
+
+                allAdmissions = [];
+                snapshot.forEach((doc) => {
+                    allAdmissions.push({
+                        id: doc.id,
+                        data: doc.data()
+                    });
+                });
+
+                loadingState.remove();
+                filterAdmissions();
+
+            } catch (error) {
+                console.error('Error loading admissions:', error);
+                loadingState.innerHTML = `
+                    <div class="empty-state">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <h3>Error loading admissions</h3>
+                        <p>${error.message}</p>
+                        <button class="add-btn" onclick="location.reload()">
+                            <i class="bi bi-arrow-clockwise"></i>
+                            Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Event listeners
+        searchInput.addEventListener('input', filterAdmissions);
+        levelFilter.addEventListener('change', filterAdmissions);
+
+        // View admission details in iOS Modal
+        window.viewAdmission = function (id) {
+            const admission = allAdmissions.find(a => a.id === id);
+            if (admission) {
+                const data = admission.data;
+                const modal = document.getElementById('admissionModal');
+                const modalBody = document.getElementById('modalBody');
+
+                // Generate rounds table HTML
+                let roundsTableHTML = '';
+                const isExpected = data.isExpected || data.roundsCount === 'EXPECTED';
+
+                if (isExpected) {
+                    // Show EXPECTED status with date range if available
+                    if (data.expectedDateRange && (data.expectedDateRange.from || data.expectedDateRange.to)) {
+                        const fromDate = formatDate(data.expectedDateRange.from);
+                        const toDate = formatDate(data.expectedDateRange.to);
+                        roundsTableHTML = `
+                            <div style="padding: 24px; text-align: center; background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 16px; margin-bottom: 16px;">
+                                <div class="expected-badge" style="display: inline-flex; margin-bottom: 12px;">
+                                    <i class="bi bi-clock-history"></i>
+                                    <span>EXPECTED</span>
+                                </div>
+                                <div style="font-size: 15px; color: #92400e; font-weight: 600;">
+                                    Expected timeframe: ${fromDate || '?'} - ${toDate || '?'}
+                                </div>
+                                <div style="font-size: 13px; color: #78350f; margin-top: 6px; font-style: italic;">
+                                    Admissions are expected to open during this period
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        roundsTableHTML = `
+                            <div style="padding: 24px; text-align: center; background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 16px; margin-bottom: 16px;">
+                                <div class="expected-badge" style="display: inline-flex; margin-bottom: 8px;">
+                                    <i class="bi bi-clock-history"></i>
+                                    <span>EXPECTED</span>
+                                </div>
+                                <div style="font-size: 15px; color: #92400e; font-weight: 600;">
+                                    Dates not yet announced
+                                </div>
+                                <div style="font-size: 13px; color: #78350f; margin-top: 6px; font-style: italic;">
+                                    Check back soon for updates
+                                </div>
+                            </div>
+                        `;
+                    }
+                } else if (data.rounds && data.rounds.length > 0) {
+                    roundsTableHTML = `
+                        <table class="ios-rounds-table">
+                            <thead>
+                                <tr>
+                                    <th>Round</th>
+                                    <th>Application</th>
+                                    <th>Docs</th>
+                                    <th>Interview</th>
+                                    <th>Result</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+
+                    data.rounds.forEach((round, index) => {
+                        const fromDate = formatDate(round.onlineApplicationFrom || round.applicationPeriod?.from);
+                        const toDate = formatDate(round.onlineApplicationTo || round.applicationPeriod?.to);
+                        const docDate = formatDate(round.documentSubmission);
+                        const interviewDate = formatDate(round.interview);
+                        const resultDate = formatDate(round.announcement);
+
+                        roundsTableHTML += `
+                            <tr>
+                                <td>
+                                    <span class="round-badge-cell">R${index + 1}</span>
+                                </td>
+                                <td>
+                                    <div class="date-primary">${fromDate || '-'}</div>
+                                    ${toDate ? `<div class="date-secondary">to ${toDate}</div>` : ''}
+                                </td>
+                                <td>${docDate || '-'}</td>
+                                <td>${interviewDate || '-'}</td>
+                                <td>${resultDate || '-'}</td>
+                            </tr>
+                        `;
+                    });
+
+                    roundsTableHTML += '</tbody></table>';
+                } else {
+                    roundsTableHTML = '<div class="ios-section-content empty">No application periods set</div>';
+                }
+
+                // Build modal content
+                modalBody.innerHTML = `
+                    <div class="ios-university-header">
+                        <div class="ios-university-icon">
+                            <i class="bi bi-building"></i>
+                        </div>
+                        <div class="ios-university-info">
+                            <h3>${data.universityName || 'Unknown University'}</h3>
+                            <span class="edu-level">${data.educationLevel || 'N/A'}</span>
+                        </div>
+                    </div>
+                    
+                    ${roundsTableHTML}
+                    
+                    <div class="ios-info-section" id="section-info">
+                        <div class="ios-section-header" onclick="toggleAccordion('section-info')">
+                            <i class="bi bi-info-circle-fill"></i>
+                            <span>Information</span>
+                            <i class="bi bi-chevron-down chevron"></i>
+                        </div>
+                        <div class="ios-section-content ${!data.information ? 'empty' : ''}">${data.information || 'No information provided'}</div>
+                    </div>
+                    
+                    <div class="ios-info-section" id="section-majors">
+                        <div class="ios-section-header" onclick="toggleAccordion('section-majors')">
+                            <i class="bi bi-book-fill"></i>
+                            <span>Majors</span>
+                            <i class="bi bi-chevron-down chevron"></i>
+                        </div>
+                        <div class="ios-section-content ${!data.majors ? 'empty' : ''}">${data.majors || 'No majors specified'}</div>
+                    </div>
+                    
+                    <div class="ios-info-section" id="section-scholarships">
+                        <div class="ios-section-header" onclick="toggleAccordion('section-scholarships')">
+                            <i class="bi bi-trophy-fill"></i>
+                            <span>Scholarships</span>
+                            <i class="bi bi-chevron-down chevron"></i>
+                        </div>
+                        <div class="ios-section-content ${!data.scholarships ? 'empty' : ''}">${data.scholarships || 'No scholarship information'}</div>
+                    </div>
+                `;
+
+
+
+                // Show modal
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        };
+
+        // Toggle Accordion Function
+        window.toggleAccordion = function (sectionId) {
+            const sections = document.querySelectorAll('.ios-info-section');
+            const target = document.getElementById(sectionId);
+
+            if (target.classList.contains('active')) {
+                // If already active, close it
+                target.classList.remove('active');
+            } else {
+                // Close all other sections first
+                sections.forEach(s => s.classList.remove('active'));
+                // Open the target section
+                target.classList.add('active');
+            }
+        };
+
+        // Close modal function
+        window.closeModal = function () {
+            const modal = document.getElementById('admissionModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        };
+
+        // Close modal on overlay click
+        document.getElementById('admissionModal').addEventListener('click', function (e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // Initialize
+        loadAdmissions();
+
+        // Registration Modal Functions
+        let currentAdmissionId = null;
+
+        window.openRegistrationModal = function (admissionId) {
+            currentAdmissionId = admissionId;
+            const modal = document.getElementById('registrationModal');
+            const form = document.getElementById('registrationForm');
+            form.reset();
+
+            // Get university name and set message
+            const admission = allAdmissions.find(a => a.id === admissionId);
+            if (admission) {
+                const universityName = admission.data.universityName || 'this University';
+                const messageTextarea = document.getElementById('studentMessage');
+                messageTextarea.value = `I'm interested in ${universityName}, Please contact me!`;
+            }
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        };
+
+        window.closeRegistrationModal = function () {
+            const modal = document.getElementById('registrationModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+            currentAdmissionId = null;
+        };
+
+        // Format phone number input
+        const phoneInput = document.getElementById('studentNumber');
+        phoneInput.addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, '');
+
+            // Ensure it starts with 998
+            if (!value.startsWith('998') && value.length > 0) {
+                value = '998' + value;
+            }
+
+            // Format: +998-XX-XXX-XXXX
+            let formatted = '';
+            if (value.length > 0) {
+                formatted = '+998';
+                if (value.length > 3) {
+                    formatted += '-' + value.substring(3, 5);
+                }
+                if (value.length > 5) {
+                    formatted += '-' + value.substring(5, 8);
+                }
+                if (value.length > 8) {
+                    formatted += '-' + value.substring(8, 12);
+                }
+            }
+
+            e.target.value = formatted;
+        });
+
+        // Handle registration form submission
+        document.getElementById('submitRegistration').addEventListener('click', async function () {
+            const nameInput = document.getElementById('studentName');
+            const phoneInput = document.getElementById('studentNumber');
+            const submitBtn = this;
+
+            // Validate inputs
+            if (!nameInput.value.trim() || !phoneInput.value.trim()) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            // Validate phone number format
+            const phoneRegex = /^\+998-\d{2}-\d{3}-\d{4}$/;
+            if (!phoneRegex.test(phoneInput.value)) {
+                alert('Please enter a valid phone number in format: +998-XX-XXX-XXXX');
+                return;
+            }
+
+            try {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
+
+                const messageTextarea = document.getElementById('studentMessage');
+
+                // Get university name for notification
+                const admission = allAdmissions.find(a => a.id === currentAdmissionId);
+                const universityName = admission ? admission.data.universityName : 'Unknown University';
+
+                // Strip +998 prefix from phone number before saving
+                const phoneNumber = phoneInput.value.replace('+998-', '').replace(/-/g, '');
+
+                const studentData = {
+                    name: nameInput.value.trim().toUpperCase(),
+                    phoneNumber: phoneNumber, // Save without +998 prefix
+                    message: messageTextarea.value,
+                    universityName: universityName,
+                    admissionId: currentAdmissionId,
+                    registeredAt: new Date().toISOString(),
+                    timestamp: new Date()
+                };
+
+                // Import setDoc function
+                const { setDoc } = await import("https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js");
+
+                // Save to Firestore - document name is the student's name
+                const studentRef = doc(db, 'savedstudents', studentData.name);
+                await setDoc(studentRef, studentData);
+
+                // Send data to Google Apps Script (Google Sheets + Telegram)
+                const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyD4XbAASJDg0NlmEcs2tNEewgN7m0egdjHuWqDePN8lPqg3I_9PdWoHbUztJhxj7QI/exec';
+
+                try {
+                    const response = await fetch(GOOGLE_SCRIPT_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(studentData),
+                        mode: 'no-cors' // Required for Google Apps Script
+                    });
+                    console.log('Data sent to Google Sheets and Telegram');
+                } catch (sheetError) {
+                    console.error('Error sending to Google Sheets:', sheetError);
+                    // Don't fail the whole submission if Google Sheets fails
+                }
+
+                // Show success toast notification
+                showSuccessToast();
+                closeRegistrationModal();
+
+            } catch (error) {
+                console.error('Error saving registration:', error);
+                alert('Error submitting registration: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit';
+            }
+        });
+
+        // Show success toast notification
+        function showSuccessToast() {
+            const toast = document.getElementById('successToast');
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000); // Hide after 3 seconds
+        }
+
+        // Close registration modal on overlay click
+        document.getElementById('registrationModal').addEventListener('click', function (e) {
+            if (e.target === this) {
+                closeRegistrationModal();
+            }
+        });
+    </script>
+</body>
+
+</html>
