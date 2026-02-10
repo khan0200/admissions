@@ -696,12 +696,13 @@
 
         .university-items-container {
             max-height: 500px;
-            overflow: hidden;
+            overflow-y: auto;
             transition: max-height 0.3s ease-out;
         }
 
         .university-level-group.collapsed .university-items-container {
             max-height: 0;
+            overflow: hidden;
         }
 
         .university-item {
