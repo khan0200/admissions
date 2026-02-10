@@ -626,6 +626,141 @@
             color: #92400e;
             border: 1px solid #f59e0b;
         }
+
+        /* Universities List Styles */
+        .university-level-group {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            overflow: hidden;
+        }
+
+        .university-level-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+            background: #ffffff;
+        }
+
+        .university-level-header:hover {
+            background: #f8fafc;
+        }
+
+        .university-level-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .university-level-icon {
+            font-size: 20px;
+            color: #007aff;
+        }
+
+        .university-level-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e293b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .university-count-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 28px;
+            height: 28px;
+            background: #007aff;
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            border-radius: 20px;
+            padding: 0 10px;
+        }
+
+        .university-level-chevron {
+            font-size: 16px;
+            color: #94a3b8;
+            transition: transform 0.3s;
+        }
+
+        .university-level-group.collapsed .university-level-chevron {
+            transform: rotate(-90deg);
+        }
+
+        .university-items-container {
+            max-height: 500px;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .university-level-group.collapsed .university-items-container {
+            max-height: 0;
+        }
+
+        .university-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 20px;
+            background: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+
+        .university-item:hover {
+            background: #f1f5f9;
+            padding-left: 24px;
+        }
+
+        .university-item-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: #334155;
+            flex: 1;
+        }
+
+        .university-item-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .university-delete-btn {
+            padding: 6px 12px;
+            background: transparent;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 6px;
+            color: #ef4444;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .university-delete-btn:hover {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: #ef4444;
+        }
+
+        .universities-empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #64748b;
+        }
+
+        .universities-empty-state i {
+            font-size: 48px;
+            color: #334155;
+            margin-bottom: 12px;
+        }
     </style>
 </head>
 
@@ -646,6 +781,11 @@
                         <i class="bi bi-people-fill"></i>
                         <span>View Leads</span>
                     </a>
+                    <button onclick="openUniversitiesModal()" class="ios-add-btn"
+                        style="background: linear-gradient(135deg, #34c759 0%, #30b350 100%);">
+                        <i class="bi bi-building"></i>
+                        <span>Universities</span>
+                    </button>
                     <button onclick="openFormModal()" class="ios-add-btn">
                         <i class="bi bi-plus"></i>
                         <span>Add Admission</span>
@@ -773,6 +913,73 @@
                 <button type="button" class="btn-ios-cancel" onclick="closeModal('formModal')">Cancel</button>
                 <button form="admissionForm" type="submit" class="btn-ios-save" id="saveBtn">
                     <i class="bi bi-check-circle"></i> Save
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Universities Modal (View & Manage) -->
+    <div class="ios-modal-overlay" id="universitiesModal">
+        <div class="ios-modal">
+            <div class="ios-modal-header">
+                <div class="header-icon-box" style="background: #34c759;"><i class="bi bi-building"></i></div>
+                <h2>Universities</h2>
+                <button class="ios-close-btn" onclick="closeModal('universitiesModal')"><i class="bi bi-x"></i></button>
+            </div>
+            <div class="ios-modal-body" id="universitiesBody">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 style="font-size: 14px; font-weight: 600; color: #64748b; margin: 0;">Manage university options
+                        by education level</h3>
+                    <button onclick="openAddUniversityModal()" class="btn-ios-save" style="padding: 8px 16px;">
+                        <i class="bi bi-plus"></i> Add University
+                    </button>
+                </div>
+                <div id="universitiesListContainer">
+                    <div class="loading-container">
+                        <div class="loading-spinner"></div>
+                        <p>Loading universities...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add University Modal -->
+    <div class="ios-modal-overlay" id="addUniversityModal">
+        <div class="ios-modal" style="max-width: 500px;">
+            <div class="ios-modal-header">
+                <div class="header-icon-box" style="background: #34c759;"><i class="bi bi-building"></i></div>
+                <h2>Add University</h2>
+                <button class="ios-close-btn" onclick="closeModal('addUniversityModal')"><i
+                        class="bi bi-x"></i></button>
+            </div>
+            <div class="ios-modal-body">
+                <form id="addUniversityForm">
+                    <div class="mb-3">
+                        <label class="form-label">University Name <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="universityNameInput"
+                            placeholder="AJOU UNIVERSITY (SUWON, GYEONGGI)" required style="text-transform: uppercase;">
+                        <small style="font-size: 11px; color: #64748b; margin-top: 4px; display: block;">
+                            <i class="bi bi-info-circle"></i> Name will be automatically converted to uppercase
+                        </small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Education Level <span class="required">*</span></label>
+                        <select class="form-select" id="universityLevelInput" required>
+                            <option value="">Choose Level...</option>
+                            <option value="LANGUAGE COURSE">LANGUAGE COURSE</option>
+                            <option value="COLLEGE">COLLEGE</option>
+                            <option value="BACHELOR">BACHELOR</option>
+                            <option value="MASTER NO CERTIFICATE">MASTER NO CERTIFICATE</option>
+                            <option value="MASTERS">MASTERS</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="ios-modal-footer">
+                <button type="button" class="btn-ios-cancel" onclick="closeModal('addUniversityModal')">Cancel</button>
+                <button form="addUniversityForm" type="submit" class="btn-ios-save" id="saveUniversityBtn">
+                    <i class="bi bi-check-circle"></i> Save University
                 </button>
             </div>
         </div>
@@ -1255,6 +1462,195 @@
         searchInput.oninput = filterAdmissions;
         levelFilter.onchange = filterAdmissions;
         loadUnis(); loadAdmissions();
+
+        // ========== UNIVERSITIES MANAGEMENT ==========
+
+        // Open Universities Modal
+        window.openUniversitiesModal = async () => {
+            document.getElementById('universitiesModal').classList.add('active');
+            await renderUniversitiesList();
+        };
+
+        // Open Add University Modal
+        window.openAddUniversityModal = () => {
+            document.getElementById('addUniversityModal').classList.add('active');
+        };
+
+        // Generate levelId from levelName
+        function generateLevelId(levelName) {
+            // Create a consistent ID based on the level name
+            const levelIds = {
+                'LANGUAGE COURSE': 'language_course',
+                'COLLEGE': 'college',
+                'BACHELOR': 'bachelor',
+                'MASTER NO CERTIFICATE': 'master_no_cert',
+                'MASTERS': 'masters'
+            };
+            return levelIds[levelName] || levelName.toLowerCase().replace(/\s+/g, '_');
+        }
+
+        // Render Universities List
+        async function renderUniversitiesList() {
+            const container = document.getElementById('universitiesListContainer');
+            container.innerHTML = '<div class="loading-container"><div class="loading-spinner"></div><p>Loading universities...</p></div>';
+
+            try {
+                // Reload universities
+                await loadUnis();
+
+                // Group universities by education level
+                const levels = ['LANGUAGE COURSE', 'COLLEGE', 'BACHELOR', 'MASTER NO CERTIFICATE', 'MASTERS'];
+                const groupedUniversities = {};
+
+                levels.forEach(level => {
+                    groupedUniversities[level] = allUniversities.filter(u => u.levelName === level);
+                });
+
+                // Render grouped list
+                let html = '';
+                levels.forEach(level => {
+                    const universities = groupedUniversities[level];
+                    const count = universities.length;
+
+                    html += `
+                        <div class="university-level-group collapsed" id="level-${level.replace(/\s+/g, '-')}">
+                            <div class="university-level-header" onclick="toggleUniversityLevel('${level.replace(/\s+/g, '-')}')">
+                                <div class="university-level-header-left">
+                                    <i class="bi bi-mortarboard-fill university-level-icon"></i>
+                                    <span class="university-level-title">${level}</span>
+                                    <span class="university-count-badge">${count}</span>
+                                </div>
+                                <i class="bi bi-chevron-down university-level-chevron"></i>
+                            </div>
+                            <div class="university-items-container">
+                    `;
+
+                    if (count > 0) {
+                        universities.forEach(uni => {
+                            html += `
+                                <div class="university-item" data-uni-id="${uni.id}">
+                                    <span class="university-item-name">${uni.name}</span>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        html += '<div class="university-item" style="opacity: 0.5; font-style: italic;">No universities added yet</div>';
+                    }
+
+                    html += `
+                            </div>
+                        </div>
+                    `;
+                });
+
+                if (allUniversities.length === 0) {
+                    html = `
+                        <div class="universities-empty-state">
+                            <i class="bi bi-building"></i>
+                            <h4 style="font-size: 16px; color: #334155; margin-bottom: 8px;">No Universities</h4>
+                            <p style="font-size: 13px;">Click "Add University" to get started</p>
+                        </div>
+                    `;
+                }
+
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading universities:', error);
+                container.innerHTML = '<div class="empty-state"><p>Error loading universities</p></div>';
+            }
+        }
+
+        // Toggle University Level Group (only one open at a time)
+        window.toggleUniversityLevel = (levelId) => {
+            const clickedGroup = document.getElementById(`level-${levelId}`);
+            const isCurrentlyCollapsed = clickedGroup.classList.contains('collapsed');
+
+            // Close all groups
+            document.querySelectorAll('.university-level-group').forEach(group => {
+                group.classList.add('collapsed');
+            });
+
+            // If the clicked group was collapsed, open it
+            if (isCurrentlyCollapsed) {
+                clickedGroup.classList.remove('collapsed');
+            }
+        };
+
+        // Delete University
+        window.deleteUniversity = async (id, name, level) => {
+            if (!confirm(`Are you sure you want to delete "${name}"?\n\nThis will remove it from ${level} options.`)) {
+                return;
+            }
+
+            try {
+                await deleteDoc(doc(db, 'universities', id));
+                showToast('University deleted successfully');
+                renderUniversitiesList();
+                loadUnis(); // Reload for the dropdown
+            } catch (error) {
+                console.error('Error deleting university:', error);
+                showToast('Error deleting university', 'error');
+            }
+        };
+
+        // Handle Add University Form Submit
+        document.getElementById('addUniversityForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('saveUniversityBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Saving...';
+
+            try {
+                const name = document.getElementById('universityNameInput').value.toUpperCase().trim();
+                const levelName = document.getElementById('universityLevelInput').value;
+                const levelId = generateLevelId(levelName);
+
+                // Check for duplicates
+                const duplicate = allUniversities.find(u =>
+                    u.name.toUpperCase() === name && u.levelName === levelName
+                );
+
+                if (duplicate) {
+                    showToast('This university already exists in this level', 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-check-circle"></i> Save University';
+                    return;
+                }
+
+                // Add to Firestore
+                await addDoc(collection(db, 'universities'), {
+                    name: name,
+                    levelId: levelId,
+                    levelName: levelName,
+                    createdAt: serverTimestamp()
+                });
+
+                showToast('University added successfully');
+                document.getElementById('addUniversityForm').reset();
+                closeModal('addUniversityModal');
+                renderUniversitiesList();
+                loadUnis(); // Reload for the dropdown
+            } catch (error) {
+                console.error('Error adding university:', error);
+                showToast('Error adding university', 'error');
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-check-circle"></i> Save University';
+        };
+
+        // Make sure to update closeModal to handle the new modals
+        const originalCloseModal = window.closeModal;
+        window.closeModal = (id) => {
+            document.getElementById(id).classList.remove('active');
+            if (id === 'formModal') {
+                document.getElementById('admissionForm').reset();
+                document.getElementById('formRoundsContainer').innerHTML = '';
+                currentEditingId = null;
+            } else if (id === 'addUniversityModal') {
+                document.getElementById('addUniversityForm').reset();
+            }
+        };
     </script>
 </body>
 
