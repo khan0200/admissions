@@ -807,11 +807,11 @@
                 <div class="col-12 col-md-5">
                     <select class="form-select" id="levelFilter">
                         <option value="">All Levels</option>
-                        <option value="LANGUAGE COURSE">Language Course</option>
-                        <option value="COLLEGE">College</option>
-                        <option value="BACHELOR">Bachelor</option>
-                        <option value="MASTERS">Masters</option>
-                        <option value="PHD">PhD</option>
+                        <option value="LANGUAGE COURSE">LANGUAGE COURSE</option>
+                        <option value="COLLEGE">COLLEGE</option>
+                        <option value="BACHELOR">BACHELOR</option>
+                        <option value="MASTER NO CERTIFICATE">MASTER NO CERTIFICATE</option>
+                        <option value="MASTERS">MASTERS</option>
                     </select>
                 </div>
                 <div class="col-12 col-md-3 d-flex align-items-center justify-content-end">
@@ -861,11 +861,11 @@
                             <label class="form-label">EDUCATION LEVEL <span class="required">*</span></label>
                             <select class="form-select" id="formLevel" required>
                                 <option value="">Choose Education Level...</option>
-                                <option value="LANGUAGE COURSE">Language Course</option>
-                                <option value="COLLEGE">College</option>
-                                <option value="BACHELOR">Bachelor</option>
-                                <option value="MASTERS">Masters</option>
-                                <option value="PHD">PhD</option>
+                                <option value="LANGUAGE COURSE">LANGUAGE COURSE</option>
+                                <option value="COLLEGE">COLLEGE</option>
+                                <option value="BACHELOR">BACHELOR</option>
+                                <option value="MASTER NO CERTIFICATE">MASTER NO CERTIFICATE</option>
+                                <option value="MASTERS">MASTERS</option>
                             </select>
                         </div>
                         <div class="col-md-6">
@@ -1383,6 +1383,9 @@
             if (!level) return; // Don't show anything if no level is selected
 
             const filtered = allUniversities.filter(u => u.levelName === level);
+
+            // Sort filtered universities alphabetically by name
+            filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
             filtered.forEach(u => {
                 const opt = document.createElement('option');
