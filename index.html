@@ -1144,12 +1144,21 @@
 
         // Get admission status based on dates
         function getAdmissionStatus(admission) {
+            const isExpected = admission.isExpected || admission.roundsCount === 'EXPECTED';
+
+            if (isExpected) {
+                return { status: 'expected', priority: 3, label: '📅 EXPECTED' };
+            }
+
             if (!admission.rounds || admission.rounds.length === 0) {
-                return { status: 'normal', priority: 4 };
+                return { status: 'outdated', priority: 4, label: '⚪ OUTDATED' };
             }
 
             const now = new Date();
             now.setHours(0, 0, 0, 0); // Reset time to midnight for accurate comparison
+
+            let latestEndDate = null;
+            let statusInfo = null;
 
             // Check all rounds for the earliest applicable status
             for (const round of admission.rounds) {
@@ -1163,24 +1172,37 @@
                 startDate.setHours(0, 0, 0, 0);
                 endDate.setHours(0, 0, 0, 0);
 
+                if (!latestEndDate || endDate > latestEndDate) {
+                    latestEndDate = endDate;
+                }
+
                 // ONGOING: Current date is between start and end dates
                 if (now >= startDate && now <= endDate) {
-                    return { status: 'ongoing', priority: 1, label: '🟢 OPEN NOW' };
+                    return { status: 'ongoing', priority: 1, label: '🟢 LIVE' };
                 }
 
-                // UPCOMING: Starts within 10 days
-                const daysUntilStart = Math.ceil((startDate - now) / (1000 * 60 * 60 * 24));
-                if (daysUntilStart > 0 && daysUntilStart <= 10) {
-                    return { status: 'upcoming', priority: 2, label: `⚠️ OPENS IN ${daysUntilStart} DAY${daysUntilStart > 1 ? 'S' : ''}` };
-                }
-
-                // SOON: Starts within 30 days
-                if (daysUntilStart > 10 && daysUntilStart <= 30) {
-                    return { status: 'soon', priority: 3, label: `🔵 OPENS IN ${daysUntilStart} DAYS` };
+                // UPCOMING/SOON: Starts in the future
+                if (now < startDate) {
+                    const daysUntilStart = Math.ceil((startDate - now) / (1000 * 60 * 60 * 24));
+                    // Priority is 2 for SOON
+                    if (!statusInfo || statusInfo.priority > 2) {
+                        statusInfo = {
+                            status: 'soon',
+                            priority: 2,
+                            label: daysUntilStart <= 10 ? `⚠️ OPENS IN ${daysUntilStart} DAY${daysUntilStart > 1 ? 'S' : ''}` : `🔵 SOON: IN ${daysUntilStart} DAYS`
+                        };
+                    }
                 }
             }
 
-            return { status: 'normal', priority: 4 };
+            if (statusInfo) return statusInfo;
+
+            // If no rounds are ongoing or upcoming, and latest end date is in the past, it's outdated
+            if (latestEndDate && now > latestEndDate) {
+                return { status: 'outdated', priority: 4, label: '⚪ OUTDATED' };
+            }
+
+            return { status: 'outdated', priority: 4, label: '⚪ OUTDATED' };
         }
 
         // Generate admission card HTML
@@ -1190,7 +1212,7 @@
 
             // Get status for sorting and visual effects
             const statusInfo = getAdmissionStatus(admission);
-            const statusClass = statusInfo.status !== 'normal' ? `status-${statusInfo.status}` : '';
+            const statusClass = statusInfo.status !== 'normal' && statusInfo.status !== 'outdated' ? `status-${statusInfo.status}` : '';
 
             // Determine badge class and text
             let roundBadgeClass, roundText;
@@ -1298,11 +1320,18 @@
                     </div>
                 `;
             } else {
-                // Sort by priority: 1 (ongoing) > 2 (upcoming) > 3 (soon) > 4 (normal)
+                // Sort by priority: 1 (LIVE) > 2 (SOON) > 3 (EXPECTED) > 4 (OUTDATED)
                 const sortedAdmissions = admissions.map(a => ({
                     ...a,
                     statusInfo: getAdmissionStatus(a.data)
-                })).sort((a, b) => a.statusInfo.priority - b.statusInfo.priority);
+                })).sort((a, b) => {
+                    // Primary sort by priority
+                    if (a.statusInfo.priority !== b.statusInfo.priority) {
+                        return a.statusInfo.priority - b.statusInfo.priority;
+                    }
+                    // Secondary sort by university name
+                    return (a.data.universityName || '').localeCompare(b.data.universityName || '');
+                });
 
                 cardsContainer.innerHTML = sortedAdmissions.map(a => generateCardHTML(a.data, a.id)).join('');
             }
